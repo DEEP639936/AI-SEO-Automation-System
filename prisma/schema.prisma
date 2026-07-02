@@ -1,0 +1,124 @@
+// AI-Powered SEO Automation System — Prisma schema (SQLite)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String? // null when oauth-only
+  oauthProvider String? // "google" | null
+  role         String   @default("owner") // owner | member
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sites              Site[]
+  contentGenerations ContentGeneration[]
+}
+
+model Site {
+  id             String   @id @default(cuid())
+  userId         String
+  url            String
+  name           String
+  sitemapUrl     String?
+  crawlFrequency String   @default("weekly") // daily | weekly | monthly
+  lastCrawlAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits   Audit[]
+  keywords Keyword[]
+  reports  Report[]
+}
+
+model Audit {
+  id           String   @id @default(cuid())
+  siteId       String
+  runAt        DateTime @default(now())
+  score        Int      @default(0) // 0-100
+  pagesCrawled Int      @default(0)
+  durationMs   Int      @default(0)
+  summaryJson  String   // JSON blob: counts by severity, etc.
+
+  site   Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  issues AuditIssue[]
+
+  @@index([siteId, runAt])
+}
+
+model AuditIssue {
+  id        String @id @default(cuid())
+  auditId   String
+  type      String // broken_link | missing_title | missing_meta_description | missing_h1 | duplicate_title | missing_alt | slow_load | non_https | redirect_chain | missing_mobile_viewport
+  severity  String // critical | warning | info
+  url       String
+  detail    String
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+}
+
+model Keyword {
+  id        String   @id @default(cuid())
+  siteId    String
+  keyword   String
+  targetUrl String?
+  createdAt DateTime @default(now())
+
+  site     Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  rankings KeywordRanking[]
+
+  @@index([siteId])
+}
+
+model KeywordRanking {
+  id        String   @id @default(cuid())
+  keywordId String
+  position  Int // 1-100, lower is better; 0 = not ranking
+  checkedAt DateTime @default(now())
+
+  keyword Keyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@index([keywordId, checkedAt])
+}
+
+model ContentGeneration {
+  id        String   @id @default(cuid())
+  userId    String
+  siteId    String?
+  keyword   String
+  prompt    String
+  mode      String // generate | improve
+  output    String // markdown
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  siteId      String
+  periodStart DateTime
+  periodEnd   DateTime
+  title       String
+  bodyHtml    String
+  bodyText    String
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+}
