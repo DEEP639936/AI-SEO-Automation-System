@@ -20,6 +20,7 @@ import { Markdown } from "@/components/shared/markdown";
 import { PageHeader } from "@/components/shared/page-header";
 import { GlowCard } from "@/components/shared/glow-card";
 import { Shimmer } from "@/components/shared/shimmer";
+import { StaggerGroup, StaggerItem } from "@/components/shared/stagger";
 import {
   Globe,
   Bug,
@@ -144,7 +145,8 @@ export function OverviewView() {
         </GlowCard>
 
         {/* stat cards */}
-        <div className="grid grid-cols-2 gap-4 lg:col-span-2 lg:grid-cols-2">
+        <StaggerGroup className="grid grid-cols-2 gap-4 lg:col-span-2 lg:grid-cols-2">
+          <StaggerItem>
           <StatCard
             icon={AlertOctagon}
             label="Critical issues"
@@ -152,6 +154,8 @@ export function OverviewView() {
             tone="red"
             loading={auditQ.isLoading}
           />
+          </StaggerItem>
+          <StaggerItem>
           <StatCard
             icon={AlertTriangle}
             label="Warnings"
@@ -159,6 +163,8 @@ export function OverviewView() {
             tone="amber"
             loading={auditQ.isLoading}
           />
+          </StaggerItem>
+          <StaggerItem>
           <StatCard
             icon={Target}
             label="Keywords tracked"
@@ -166,6 +172,8 @@ export function OverviewView() {
             tone="blue"
             loading={rankingsQ.isLoading}
           />
+          </StaggerItem>
+          <StaggerItem>
           <StatCard
             icon={Info}
             label="Info / notices"
@@ -173,7 +181,8 @@ export function OverviewView() {
             tone="sky"
             loading={auditQ.isLoading}
           />
-        </div>
+          </StaggerItem>
+        </StaggerGroup>
       </div>
 
       {/* ranking trend + top issues */}

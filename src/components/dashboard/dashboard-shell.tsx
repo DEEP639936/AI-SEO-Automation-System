@@ -8,6 +8,8 @@ import { useUI } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AuroraBackground } from "@/components/shared/aurora-background";
+import { ScrollProgress } from "@/components/shared/scroll-progress";
+import { CursorGlow } from "@/components/shared/cursor-glow";
 import { Menu, Search, Moon, Sun, Github, Command, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { OverviewView } from "./views/overview";
@@ -45,6 +47,8 @@ export function DashboardShell() {
 
   return (
     <div className="relative flex min-h-screen w-full">
+      <ScrollProgress />
+      <CursorGlow />
       <AuroraBackground variant="subtle" />
 
       {/* desktop sidebar */}

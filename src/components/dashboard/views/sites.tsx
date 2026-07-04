@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { ScoreRing } from "@/components/shared/score-ring";
 import { SeverityBadge, type Severity } from "@/components/shared/severity-badge";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGroup, StaggerItem } from "@/components/shared/stagger";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

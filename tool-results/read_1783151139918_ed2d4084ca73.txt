@@ -1,0 +1,1376 @@
+     1→"use client";
+     2→
+     3→/* =========================================================================
+     4→   SEOScout — Premium marketing landing page
+     5→   Single self-contained component. Uses shared animation primitives + shadcn.
+     6→   ========================================================================= */
+     7→
+     8→import { useRef, useState, type ReactNode } from "react";
+     9→import {
+    10→  motion,
+    11→  AnimatePresence,
+    12→  useScroll,
+    13→  useMotionValueEvent,
+    14→  type Variants,
+    15→} from "framer-motion";
+    16→import {
+    17→  Search,
+    18→  ArrowRight,
+    19→  Sparkles,
+    20→  Globe,
+    21→  TrendingUp,
+    22→  FileText,
+    23→  Gauge,
+    24→  CalendarClock,
+    25→  Check,
+    26→  Star,
+    27→  ScanSearch,
+    28→  Zap,
+    29→  Shield,
+    30→  Twitter,
+    31→  Github,
+    32→  Linkedin,
+    33→  Menu,
+    34→  X,
+    35→  ChevronDown,
+    36→  LayoutDashboard,
+    37→  Bug,
+    38→  type LucideIcon,
+    39→} from "lucide-react";
+    40→import { Button } from "@/components/ui/button";
+    41→import { Badge } from "@/components/ui/badge";
+    42→import { Separator } from "@/components/ui/separator";
+    43→import { AuroraBackground } from "@/components/shared/aurora-background";
+    44→import { TiltCard } from "@/components/shared/tilt-card";
+    45→import { MagneticButton } from "@/components/shared/magnetic-button";
+    46→import { Reveal, staggerContainer, staggerItem } from "@/components/shared/reveal";
+    47→import { Marquee } from "@/components/shared/marquee";
+    48→import { GlowCard } from "@/components/shared/glow-card";
+    49→import { AnimatedCounter } from "@/components/shared/animated-counter";
+    50→import { cn } from "@/lib/utils";
+    51→
+    52→/* ------------------------------------------------------------------ */
+    53→/* Constants                                                          */
+    54→/* ------------------------------------------------------------------ */
+    55→
+    56→const NAV_LINKS = [
+    57→  { label: "Features", id: "features" },
+    58→  { label: "How it works", id: "how" },
+    59→  { label: "Pricing", id: "pricing" },
+    60→];
+    61→
+    62→const COMPANIES = [
+    63→  "Northwind",
+    64→  "Quanta Labs",
+    65→  "Vertex Media",
+    66→  "Lumen",
+    67→  "Brightpath",
+    68→  "Cobalt",
+    69→  "Foundry",
+    70→  "Helix",
+    71→  "Orbital",
+    72→  "Meridian",
+    73→];
+    74→
+    75→type Feature = {
+    76→  icon: LucideIcon;
+    77→  title: string;
+    78→  desc: string;
+    79→  accent: string; // chart color token name
+    80→};
+    81→
+    82→const FEATURES: Feature[] = [
+    83→  {
+    84→    icon: Globe,
+    85→    title: "Real site crawls",
+    86→    desc: "Our bot walks every page on your site the way Google does — following links, reading robots.txt, and surfacing broken links, missing meta, slow loads, and duplicate titles in seconds.",
+    87→    accent: "chart-1",
+    88→  },
+    89→  {
+    90→    icon: Sparkles,
+    91→    title: "AI content generation",
+    92→    desc: "Generate optimized titles, meta descriptions, H1s and full article drafts in under 60 seconds — tuned to your keyword and tone.",
+    93→    accent: "chart-2",
+    94→  },
+    95→  {
+    96→    icon: TrendingUp,
+    97→    title: "Keyword rank tracking",
+    98→    desc: "Daily position updates with 14-day trends, sparklines, and change deltas so you always know which way the needle is moving.",
+    99→    accent: "chart-3",
+   100→  },
+   101→  {
+   102→    icon: FileText,
+   103→    title: "Automated reports",
+   104→    desc: "Beautiful, shareable HTML reports generated on a schedule. Stakeholders stay informed without you lifting a finger.",
+   105→    accent: "chart-4",
+   106→  },
+   107→  {
+   108→    icon: Gauge,
+   109→    title: "Health scoring",
+   110→    desc: "A single weighted score from 0–100 that combines critical, warning, and info issues into one number your team can rally around.",
+   111→    accent: "chart-1",
+   112→  },
+   113→  {
+   114→    icon: CalendarClock,
+   115→    title: "Scheduled audits",
+   116→    desc: "Set it and forget it. Hourly, daily, or weekly audits run automatically and alert you the moment a regression slips in.",
+   117→    accent: "chart-2",
+   118→  },
+   119→];
+   120→
+   121→const STEPS = [
+   122→  {
+   123→    icon: ScanSearch,
+   124→    title: "Add your site",
+   125→    desc: "Drop in your URL. SEOScout reads your robots.txt, maps every internal link, and queues your pages for a full crawl in under a second.",
+   126→  },
+   127→  {
+   128→    icon: Bug,
+   129→    title: "We crawl & analyze",
+   130→    desc: "Every page is fetched, parsed, and scored. Broken links, missing meta, slow loads, duplicate titles, mobile issues — all caught automatically.",
+   131→  },
+   132→  {
+   133→    icon: Zap,
+   134→    title: "Generate, fix & track",
+   135→    desc: "Spin up AI content, ship fixes, then watch your keyword rankings climb with daily updates and trended reports your stakeholders will actually read.",
+   136→  },
+   137→];
+   138→
+   139→const LIVE_STATS = [
+   140→  { value: 10420, suffix: "+", label: "Sites audited" },
+   141→  { value: 2140000, suffix: "+", label: "Issues fixed" },
+   142→  { value: 184500, suffix: "+", label: "AI generations" },
+   143→  { value: 38, prefix: "+", suffix: "%", label: "Avg score uplift" },
+   144→];
+   145→
+   146→const TESTIMONIALS = [
+   147→  {
+   148→    quote:
+   149→      "SEOScout replaced three tools for us. The AI content generation alone saves our team eight hours a week. Rankings climbed 40% in the first quarter.",
+   150→    name: "Maya Chen",
+   151→    role: "Head of Growth, Northwind",
+   152→    initials: "MC",
+   153→  },
+   154→  {
+   155→    quote:
+   156→      "We finally have one source of truth for technical SEO. The automated crawls catch issues before Google does. It paid for itself in week one.",
+   157→    name: "Daniel Okafor",
+   158→    role: "SEO Lead, Quanta Labs",
+   159→    initials: "DO",
+   160→  },
+   161→  {
+   162→    quote:
+   163→      "The weekly reports are gorgeous and the rank tracking is scary accurate. Our clients think we hired an extra analyst. It's just SEOScout.",
+   164→    name: "Priya Nair",
+   165→    role: "Founder, Brightpath Studio",
+   166→    initials: "PN",
+   167→  },
+   168→];
+   169→
+   170→type Plan = {
+   171→  name: string;
+   172→  price: number;
+   173→  tagline: string;
+   174→  features: string[];
+   175→  cta: string;
+   176→  highlighted?: boolean;
+   177→};
+   178→
+   179→const PLANS: Plan[] = [
+   180→  {
+   181→    name: "Starter",
+   182→    price: 29,
+   183→    tagline: "For solo founders & side projects",
+   184→    features: [
+   185→      "3 sites",
+   186→      "50 AI generations / mo",
+   187→      "Weekly automated audits",
+   188→      "50 tracked keywords",
+   189→      "Email support",
+   190→    ],
+   191→    cta: "Start free",
+   192→  },
+   193→  {
+   194→    name: "Pro",
+   195→    price: 99,
+   196→    tagline: "For growing marketing teams",
+   197→    features: [
+   198→      "15 sites",
+   199→      "500 AI generations / mo",
+   200→      "Daily automated audits",
+   201→      "500 tracked keywords",
+   202→      "Automated weekly reports",
+   203→      "Priority support",
+   204→    ],
+   205→    cta: "Start free",
+   206→    highlighted: true,
+   207→  },
+   208→  {
+   209→    name: "Business",
+   210→    price: 299,
+   211→    tagline: "For agencies & in-house teams",
+   212→    features: [
+   213→      "Unlimited sites",
+   214→      "Unlimited AI generations",
+   215→      "Hourly audits",
+   216→      "5,000 tracked keywords",
+   217→      "White-label reports",
+   218→      "Dedicated manager + SSO",
+   219→    ],
+   220→    cta: "Start free",
+   221→  },
+   222→];
+   223→
+   224→const FOOTER_COLS = [
+   225→  {
+   226→    title: "Product",
+   227→    links: ["Features", "Pricing", "Changelog", "Roadmap"],
+   228→  },
+   229→  {
+   230→    title: "Resources",
+   231→    links: ["Documentation", "API Reference", "Blog", "Status"],
+   232→  },
+   233→  {
+   234→    title: "Company",
+   235→    links: ["About", "Careers", "Press", "Contact"],
+   236→  },
+   237→  {
+   238→    title: "Legal",
+   239→    links: ["Privacy", "Terms", "Security", "DPA"],
+   240→  },
+   241→];
+   242→
+   243→/* ------------------------------------------------------------------ */
+   244→/* Animation variants                                                 */
+   245→/* ------------------------------------------------------------------ */
+   246→
+   247→const heroContainer: Variants = {
+   248→  hidden: {},
+   249→  show: { transition: { staggerChildren: 0.11, delayChildren: 0.05 } },
+   250→};
+   251→const heroItem: Variants = {
+   252→  hidden: { opacity: 0, y: 24 },
+   253→  show: {
+   254→    opacity: 1,
+   255→    y: 0,
+   256→    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+   257→  },
+   258→};
+   259→
+   260→/* ------------------------------------------------------------------ */
+   261→/* Helpers                                                            */
+   262→/* ------------------------------------------------------------------ */
+   263→
+   264→function scrollToId(id: string) {
+   265→  if (typeof document === "undefined") return;
+   266→  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+   267→}
+   268→
+   269→function GradientIcon({ icon: Icon, accent }: { icon: LucideIcon; accent: string }) {
+   270→  return (
+   271→    <div
+   272→      className={cn(
+   273→        "flex h-11 w-11 items-center justify-center rounded-xl brand-gradient text-white shadow-lg shadow-primary/20"
+   274→      )}
+   275→    >
+   276→      <Icon className="h-5 w-5" data-accent={accent} />
+   277→    </div>
+   278→  );
+   279→}
+   280→
+   281→/* ------------------------------------------------------------------ */
+   282→/* Score ring (SVG)                                                   */
+   283→/* ------------------------------------------------------------------ */
+   284→
+   285→function ScoreRing({ value = 92, size = 132 }: { value?: number; size?: number }) {
+   286→  const stroke = 10;
+   287→  const r = (size - stroke) / 2 - 2;
+   288→  const c = 2 * Math.PI * r;
+   289→  const offset = c * (1 - value / 100);
+   290→  return (
+   291→    <div className="relative" style={{ width: size, height: size }}>
+   292→      <svg width={size} height={size} className="-rotate-90">
+   293→        <circle
+   294→          cx={size / 2}
+   295→          cy={size / 2}
+   296→          r={r}
+   297→          fill="none"
+   298→          stroke="currentColor"
+   299→          strokeWidth={stroke}
+   300→          className="text-muted/40"
+   301→        />
+   302→        <motion.circle
+   303→          cx={size / 2}
+   304→          cy={size / 2}
+   305→          r={r}
+   306→          fill="none"
+   307→          stroke="url(#scoreGrad)"
+   308→          strokeWidth={stroke}
+   309→          strokeLinecap="round"
+   310→          strokeDasharray={c}
+   311→          initial={{ strokeDashoffset: c }}
+   312→          whileInView={{ strokeDashoffset: offset }}
+   313→          viewport={{ once: true }}
+   314→          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+   315→        />
+   316→        <defs>
+   317→          <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
+   318→            <stop offset="0%" stopColor="#3b82f6" />
+   319→            <stop offset="100%" stopColor="#06b6d4" />
+   320→          </linearGradient>
+   321→        </defs>
+   322→      </svg>
+   323→      <div className="absolute inset-0 flex flex-col items-center justify-center">
+   324→        <motion.span
+   325→          className="text-3xl font-bold tracking-tight"
+   326→          initial={{ opacity: 0 }}
+   327→          whileInView={{ opacity: 1 }}
+   328→          viewport={{ once: true }}
+   329→          transition={{ delay: 0.6, duration: 0.5 }}
+   330→        >
+   331→          {value}
+   332→        </motion.span>
+   333→        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+   334→          Health
+   335→        </span>
+   336→      </div>
+   337→    </div>
+   338→  );
+   339→}
+   340→
+   341→/* ------------------------------------------------------------------ */
+   342→/* Line chart (SVG)                                                   */
+   343→/* ------------------------------------------------------------------ */
+   344→
+   345→function TrendChart() {
+   346→  return (
+   347→    <svg
+   348→      viewBox="0 0 300 100"
+   349→      preserveAspectRatio="none"
+   350→      className="h-full w-full"
+   351→      aria-hidden
+   352→    >
+   353→      <defs>
+   354→        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+   355→          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
+   356→          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+   357→        </linearGradient>
+   358→      </defs>
+   359→      <motion.path
+   360→        d="M 0 80 C 30 75, 50 70, 70 62 S 110 48, 140 52 S 180 32, 210 26 S 260 14, 300 8 L 300 100 L 0 100 Z"
+   361→        fill="url(#areaGrad)"
+   362→        initial={{ opacity: 0 }}
+   363→        whileInView={{ opacity: 1 }}
+   364→        viewport={{ once: true }}
+   365→        transition={{ duration: 1, delay: 0.8 }}
+   366→      />
+   367→      <motion.path
+   368→        d="M 0 80 C 30 75, 50 70, 70 62 S 110 48, 140 52 S 180 32, 210 26 S 260 14, 300 8"
+   369→        fill="none"
+   370→        stroke="#3b82f6"
+   371→        strokeWidth="2.5"
+   372→        strokeLinecap="round"
+   373→        initial={{ pathLength: 0 }}
+   374→        whileInView={{ pathLength: 1 }}
+   375→        viewport={{ once: true }}
+   376→        transition={{ duration: 1.8, ease: "easeInOut" }}
+   377→      />
+   378→      <motion.circle
+   379→        cx="300"
+   380→        cy="8"
+   381→        r="3.5"
+   382→        fill="#06b6d4"
+   383→        initial={{ scale: 0 }}
+   384→        whileInView={{ scale: 1 }}
+   385→        viewport={{ once: true }}
+   386→        transition={{ delay: 1.7, type: "spring", stiffness: 300, damping: 15 }}
+   387→      />
+   388→    </svg>
+   389→  );
+   390→}
+   391→
+   392→/* ------------------------------------------------------------------ */
+   393→/* Animated bar chart (for large feature card)                        */
+   394→/* ------------------------------------------------------------------ */
+   395→
+   396→function BarChartMini() {
+   397→  const bars = [38, 62, 48, 78, 68, 92, 84];
+   398→  return (
+   399→    <div className="flex h-24 items-end gap-2">
+   400→      {bars.map((h, i) => (
+   401→        <motion.div
+   402→          key={i}
+   403→          className="flex-1 rounded-t-md brand-gradient opacity-90"
+   404→          initial={{ height: 0 }}
+   405→          whileInView={{ height: `${h}%` }}
+   406→          viewport={{ once: true }}
+   407→          transition={{
+   408→            duration: 0.8,
+   409→            delay: i * 0.09,
+   410→            ease: [0.16, 1, 0.3, 1],
+   411→          }}
+   412→        />
+   413→      ))}
+   414→    </div>
+   415→  );
+   416→}
+   417→
+   418→/* ------------------------------------------------------------------ */
+   419→/* Dashboard preview (centerpiece)                                    */
+   420→/* ------------------------------------------------------------------ */
+   421→
+   422→function DashboardPreview() {
+   423→  return (
+   424→    <div className="glass-panel relative overflow-hidden rounded-2xl border-border/60 shadow-2xl shadow-primary/10">
+   425→      {/* top chrome */}
+   426→      <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5">
+   427→        <div className="flex gap-1.5">
+   428→          <div className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+   429→          <div className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+   430→          <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+   431→        </div>
+   432→        <div className="ml-3 flex h-6 flex-1 items-center rounded-md bg-muted/50 px-3 text-[10px] font-mono text-muted-foreground">
+   433→          app.seoscout.ai/overview
+   434→        </div>
+   435→      </div>
+   436→
+   437→      {/* body */}
+   438→      <div className="grid grid-cols-[56px_1fr] sm:grid-cols-[140px_1fr]">
+   439→        {/* sidebar */}
+   440→        <aside className="hidden flex-col gap-1 border-r border-border/60 p-3 sm:flex">
+   441→          <div className="mb-3 flex items-center gap-2">
+   442→            <div className="flex h-6 w-6 items-center justify-center rounded-md brand-gradient">
+   443→              <Search className="h-3.5 w-3.5 text-white" />
+   444→            </div>
+   445→            <span className="text-[11px] font-semibold">SEOScout</span>
+   446→          </div>
+   447→          {[
+   448→            { icon: LayoutDashboard, label: "Overview", active: true },
+   449→            { icon: Globe, label: "Sites" },
+   450→            { icon: Bug, label: "Issues" },
+   451→            { icon: TrendingUp, label: "Keywords" },
+   452→            { icon: FileText, label: "Reports" },
+   453→          ].map((item) => (
+   454→            <div
+   455→              key={item.label}
+   456→              className={cn(
+   457→                "flex items-center gap-2 rounded-md px-2 py-1.5 text-[11px]",
+   458→                item.active
+   459→                  ? "bg-primary/15 text-primary font-medium"
+   460→                  : "text-muted-foreground"
+   461→              )}
+   462→            >
+   463→              <item.icon className="h-3.5 w-3.5" />
+   464→              <span className="hidden sm:inline">{item.label}</span>
+   465→            </div>
+   466→          ))}
+   467→        </aside>
+   468→
+   469→        {/* main */}
+   470→        <div className="space-y-3 p-3 sm:p-4">
+   471→          {/* top stat row */}
+   472→          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+   473→            <PreviewStat label="Health" value="92" delta="+6" tone="up" />
+   474→            <PreviewStat label="Issues" value="14" delta="-23" tone="up" />
+   475→            <PreviewStat label="Keywords" value="128" delta="+12" tone="up" />
+   476→          </div>
+   477→
+   478→          {/* chart + ring */}
+   479→          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_132px]">
+   480→            <div className="rounded-lg border border-border/60 bg-card/60 p-3">
+   481→              <div className="mb-2 flex items-center justify-between">
+   482→                <span className="text-[11px] font-medium text-muted-foreground">
+   483→                  Organic traffic
+   484→                </span>
+   485→                <Badge
+   486→                  variant="secondary"
+   487→                  className="h-5 px-1.5 text-[10px] text-emerald-500"
+   488→                >
+   489→                  <TrendingUp className="h-3 w-3" /> +38%
+   490→                </Badge>
+   491→              </div>
+   492→              <div className="h-20">
+   493→                <TrendChart />
+   494→              </div>
+   495→            </div>
+   496→            <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-card/60 p-3">
+   497→              <ScoreRing value={92} size={104} />
+   498→            </div>
+   499→          </div>
+   500→
+   501→          {/* issues list */}
+   502→          <div className="rounded-lg border border-border/60 bg-card/60 p-3">
+   503→            <div className="mb-2 flex items-center justify-between">
+   504→              <span className="text-[11px] font-medium text-muted-foreground">
+   505→                Top issues
+   506→              </span>
+   507→              <span className="text-[10px] text-muted-foreground">4 active</span>
+   508→            </div>
+   509→            <div className="space-y-1.5">
+   510→              {[
+   511→                { sev: "critical", label: "Missing meta description", pages: "/blog/*" },
+   512→                { sev: "warning", label: "Slow page load", pages: "/pricing" },
+   513→                { sev: "warning", label: "Image missing alt", pages: "/team" },
+   514→              ].map((issue) => (
+   515→                <div
+   516→                  key={issue.label}
+   517→                  className="flex items-center gap-2 text-[11px]"
+   518→                >
+   519→                  <span
+   520→                    className={cn(
+   521→                      "h-1.5 w-1.5 rounded-full",
+   522→                      issue.sev === "critical" ? "bg-red-400" : "bg-amber-400"
+   523→                    )}
+   524→                  />
+   525→                  <span className="flex-1 truncate text-foreground/80">
+   526→                    {issue.label}
+   527→                  </span>
+   528→                  <span className="font-mono text-[10px] text-muted-foreground">
+   529→                    {issue.pages}
+   530→                  </span>
+   531→                </div>
+   532→              ))}
+   533→            </div>
+   534→          </div>
+   535→        </div>
+   536→      </div>
+   537→    </div>
+   538→  );
+   539→}
+   540→
+   541→function PreviewStat({
+   542→  label,
+   543→  value,
+   544→  delta,
+   545→  tone,
+   546→}: {
+   547→  label: string;
+   548→  value: string;
+   549→  delta: string;
+   550→  tone: "up" | "down";
+   551→}) {
+   552→  return (
+   553→    <div className="rounded-lg border border-border/60 bg-card/60 p-2.5 sm:p-3">
+   554→      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   555→        {label}
+   556→      </div>
+   557→      <div className="mt-0.5 text-lg font-semibold sm:text-xl">{value}</div>
+   558→      <div
+   559→        className={cn(
+   560→          "text-[10px] font-medium",
+   561→          tone === "up" ? "text-emerald-500" : "text-red-400"
+   562→        )}
+   563→      >
+   564→        {delta}
+   565→      </div>
+   566→    </div>
+   567→  );
+   568→}
+   569→
+   570→/* ------------------------------------------------------------------ */
+   571→/* Section heading                                                    */
+   572→/* ------------------------------------------------------------------ */
+   573→
+   574→function SectionHeading({
+   575→  eyebrow,
+   576→  title,
+   577→  desc,
+   578→}: {
+   579→  eyebrow: string;
+   580→  title: ReactNode;
+   581→  desc: string;
+   582→}) {
+   583→  return (
+   584→    <div className="mx-auto max-w-2xl text-center">
+   585→      <Reveal>
+   586→        <Badge
+   587→          variant="secondary"
+   588→          className="mb-4 rounded-full border-primary/20 bg-primary/10 px-3 text-[11px] font-medium uppercase tracking-wider text-primary"
+   589→        >
+   590→          {eyebrow}
+   591→        </Badge>
+   592→      </Reveal>
+   593→      <Reveal delay={0.05}>
+   594→        <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+   595→          {title}
+   596→        </h2>
+   597→      </Reveal>
+   598→      <Reveal delay={0.1}>
+   599→        <p className="mx-auto mt-4 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
+   600→          {desc}
+   601→        </p>
+   602→      </Reveal>
+   603→    </div>
+   604→  );
+   605→}
+   606→
+   607→/* ================================================================== */
+   608→/* MAIN COMPONENT                                                     */
+   609→/* ================================================================== */
+   610→
+   611→export function LandingPage({
+   612→  onStart,
+   613→  onSignIn,
+   614→}: {
+   615→  onStart: () => void;
+   616→  onSignIn: () => void;
+   617→}) {
+   618→  const { scrollY, scrollYProgress } = useScroll();
+   619→  const [navHidden, setNavHidden] = useState(false);
+   620→  const [mobileOpen, setMobileOpen] = useState(false);
+   621→  const prevY = useRef(0);
+   622→
+   623→  useMotionValueEvent(scrollY, "change", (latest) => {
+   624→    const prev = prevY.current;
+   625→    prevY.current = latest;
+   626→    if (latest > prev && latest > 120) setNavHidden(true);
+   627→    else setNavHidden(false);
+   628→  });
+   629→
+   630→  return (
+   631→    <div className="relative min-h-screen overflow-x-clip">
+   632→      <AuroraBackground />
+   633→
+   634→      {/* scroll progress */}
+   635→      <motion.div
+   636→        style={{ scaleX: scrollYProgress }}
+   637→        className="fixed inset-x-0 top-0 z-[60] h-0.5 origin-left brand-gradient"
+   638→        aria-hidden
+   639→      />
+   640→
+   641→      {/* ============ NAV ============ */}
+   642→      <motion.header
+   643→        animate={{ y: navHidden ? -120 : 0 }}
+   644→        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+   645→        className="sticky top-0 z-50 px-3 pt-3 sm:px-5"
+   646→      >
+   647→        <div className="glass-panel mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl px-4 py-2.5 sm:px-5">
+   648→          {/* logo */}
+   649→          <button
+   650→            type="button"
+   651→            onClick={() => scrollToId("top")}
+   652→            className="flex items-center gap-2.5"
+   653→            aria-label="SEOScout home"
+   654→          >
+   655→            <div className="flex h-9 w-9 items-center justify-center rounded-xl brand-gradient text-white shadow-md shadow-primary/30">
+   656→              <Search className="h-4.5 w-4.5" />
+   657→            </div>
+   658→            <span className="text-base font-semibold tracking-tight">
+   659→              SEO<span className="text-primary">Scout</span>
+   660→            </span>
+   661→          </button>
+   662→
+   663→          {/* center links */}
+   664→          <nav className="hidden items-center gap-1 md:flex">
+   665→            {NAV_LINKS.map((link) => (
+   666→              <button
+   667→                key={link.id}
+   668→                type="button"
+   669→                onClick={() => scrollToId(link.id)}
+   670→                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+   671→              >
+   672→                {link.label}
+   673→              </button>
+   674→            ))}
+   675→          </nav>
+   676→
+   677→          {/* right actions */}
+   678→          <div className="flex items-center gap-2">
+   679→            <Button
+   680→              variant="ghost"
+   681→              size="sm"
+   682→              onClick={onSignIn}
+   683→              className="hidden sm:inline-flex"
+   684→            >
+   685→              Sign in
+   686→            </Button>
+   687→            <MagneticButton
+   688→              as="button"
+   689→              onClick={onStart}
+   690→              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+   691→            >
+   692→              Start free
+   693→              <ArrowRight className="h-4 w-4" />
+   694→            </MagneticButton>
+   695→            <button
+   696→              type="button"
+   697→              onClick={() => setMobileOpen((o) => !o)}
+   698→              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent md:hidden"
+   699→              aria-label="Toggle menu"
+   700→            >
+   701→              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+   702→            </button>
+   703→          </div>
+   704→        </div>
+   705→
+   706→        {/* mobile dropdown */}
+   707→        <AnimatePresence>
+   708→          {mobileOpen && (
+   709→            <motion.div
+   710→              initial={{ opacity: 0, y: -8 }}
+   711→              animate={{ opacity: 1, y: 0 }}
+   712→              exit={{ opacity: 0, y: -8 }}
+   713→              transition={{ duration: 0.2 }}
+   714→              className="glass-panel mx-auto mt-2 max-w-6xl rounded-2xl p-2 md:hidden"
+   715→            >
+   716→              {NAV_LINKS.map((link) => (
+   717→                <button
+   718→                  key={link.id}
+   719→                  type="button"
+   720→                  onClick={() => {
+   721→                    scrollToId(link.id);
+   722→                    setMobileOpen(false);
+   723→                  }}
+   724→                  className="block w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+   725→                >
+   726→                  {link.label}
+   727→                </button>
+   728→              ))}
+   729→              <Separator className="my-1" />
+   730→              <button
+   731→                type="button"
+   732→                onClick={() => {
+   733→                  onSignIn();
+   734→                  setMobileOpen(false);
+   735→                }}
+   736→                className="block w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium hover:bg-accent"
+   737→              >
+   738→                Sign in
+   739→              </button>
+   740→            </motion.div>
+   741→          )}
+   742→        </AnimatePresence>
+   743→      </motion.header>
+   744→
+   745→      {/* ============ HERO ============ */}
+   746→      <section
+   747→        id="top"
+   748→        className="relative mx-auto flex max-w-6xl flex-col items-center px-5 pb-20 pt-16 text-center sm:pt-24 md:pb-28 md:pt-28"
+   749→      >
+   750→        <motion.div
+   751→          variants={heroContainer}
+   752→          initial="hidden"
+   753→          animate="show"
+   754→          className="flex flex-col items-center"
+   755→        >
+   756→          {/* pill */}
+   757→          <motion.div variants={heroItem}>
+   758→            <div className="glass-panel inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
+   759→              <span className="relative flex h-2 w-2">
+   760→                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+   761→                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+   762→              </span>
+   763→              ✨ AI-Powered SEO Automation
+   764→            </div>
+   765→          </motion.div>
+   766→
+   767→          {/* headline */}
+   768→          <motion.h1
+   769→            variants={heroItem}
+   770→            className="mt-6 text-balance text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+   771→          >
+   772→            Automate your SEO.
+   773→            <br />
+   774→            <span className="brand-gradient-text gradient-pan">
+   775→              Rank higher, faster.
+   776→            </span>
+   777→          </motion.h1>
+   778→
+   779→          {/* subhead */}
+   780→          <motion.p
+   781→            variants={heroItem}
+   782→            className="mt-6 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg"
+   783→          >
+   784→            SEOScout crawls your site, audits every page, generates AI content,
+   785→            and tracks keyword rankings — so you can ship SEO wins while you
+   786→            sleep.
+   787→          </motion.p>
+   788→
+   789→          {/* CTAs */}
+   790→          <motion.div
+   791→            variants={heroItem}
+   792→            className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
+   793→          >
+   794→            <MagneticButton
+   795→              as="button"
+   796→              onClick={onStart}
+   797→              className="glow-primary inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+   798→            >
+   799→              Start free
+   800→              <ArrowRight className="h-4 w-4" />
+   801→            </MagneticButton>
+   802→            <button
+   803→              type="button"
+   804→              onClick={() => scrollToId("how")}
+   805→              className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-card/40 px-6 text-sm font-medium backdrop-blur transition-colors hover:bg-accent"
+   806→            >
+   807→              See how it works
+   808→              <ChevronDown className="h-4 w-4" />
+   809→            </button>
+   810→          </motion.div>
+   811→
+   812→          {/* mini trust stats */}
+   813→          <motion.div
+   814→            variants={heroItem}
+   815→            className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 sm:gap-x-12"
+   816→          >
+   817→            <HeroStat value={10000} suffix="+" label="sites audited" />
+   818→            <span className="hidden h-8 w-px bg-border sm:block" />
+   819→            <HeroStat value={2000000} suffix="+" label="issues fixed" />
+   820→            <span className="hidden h-8 w-px bg-border sm:block" />
+   821→            <HeroStat value={60} prefix="<" suffix="s" label="AI content" />
+   822→          </motion.div>
+   823→        </motion.div>
+   824→
+   825→        {/* floating dashboard preview */}
+   826→        <motion.div
+   827→          initial={{ opacity: 0, y: 60, scale: 0.96 }}
+   828→          animate={{ opacity: 1, y: 0, scale: 1 }}
+   829→          transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+   830→          className="perspective-1000 relative mt-16 w-full max-w-5xl"
+   831→        >
+   832→          {/* glow under */}
+   833→          <div
+   834→            aria-hidden
+   835→            className="absolute -inset-x-8 -bottom-6 top-10 -z-10 rounded-[3rem] bg-primary/20 blur-3xl"
+   836→          />
+   837→          <div className="animate-float-slow">
+   838→            <TiltCard max={6} className="rounded-2xl">
+   839→              <DashboardPreview />
+   840→            </TiltCard>
+   841→          </div>
+   842→        </motion.div>
+   843→      </section>
+   844→
+   845→      {/* ============ TRUSTED BY MARQUEE ============ */}
+   846→      <section className="relative py-12">
+   847→        <div className="mx-auto max-w-6xl px-5">
+   848→          <p className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
+   849→            Trusted by teams at
+   850→          </p>
+   851→          <div className="relative mt-6">
+   852→            <Marquee>
+   853→              {COMPANIES.map((name) => (
+   854→                <span
+   855→                  key={name}
+   856→                  className="select-none whitespace-nowrap font-mono text-lg font-semibold tracking-tight text-muted-foreground/70 transition-colors hover:text-foreground sm:text-xl"
+   857→                >
+   858→                  {name}
+   859→                </span>
+   860→              ))}
+   861→            </Marquee>
+   862→          </div>
+   863→        </div>
+   864→      </section>
+   865→
+   866→      {/* ============ FEATURES BENTO ============ */}
+   867→      <section id="features" className="relative scroll-mt-24 py-20 sm:py-28">
+   868→        <div className="mx-auto max-w-6xl px-5">
+   869→          <SectionHeading
+   870→            eyebrow="Features"
+   871→            title={
+   872→              <>
+   873→                Everything you need to{" "}
+   874→                <span className="brand-gradient-text">win at SEO</span>
+   875→              </>
+   876→            }
+   877→            desc="One platform that replaces your crawler, your content tools, your rank tracker, and your reporting spreadsheet."
+   878→          />
+   879→
+   880→          <motion.div
+   881→            variants={staggerContainer}
+   882→            initial="hidden"
+   883→            whileInView="show"
+   884→            viewport={{ once: true, margin: "-80px" }}
+   885→            className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   886→          >
+   887→            {/* Large card 1 — Real site crawls (2x2) */}
+   888→            <motion.div
+   889→              variants={staggerItem}
+   890→              className="sm:col-span-2 lg:col-span-2 lg:row-span-2"
+   891→            >
+   892→              <TiltCard max={5} className="h-full rounded-2xl">
+   893→                <GlowCard className="flex h-full flex-col gap-4 rounded-2xl p-6">
+   894→                  <div className="flex items-start justify-between">
+   895→                    <GradientIcon icon={Globe} accent="chart-1" />
+   896→                    <Badge variant="secondary" className="text-[10px]">
+   897→                      Crawler
+   898→                    </Badge>
+   899→                  </div>
+   900→                  <div>
+   901→                    <h3 className="text-xl font-semibold tracking-tight">
+   902→                      Real site crawls
+   903→                    </h3>
+   904→                    <p className="mt-1.5 text-sm text-muted-foreground">
+   905→                      Our bot walks every page on your site the way Google does —
+   906→                      following links, reading robots.txt, and surfacing broken
+   907→                      links, missing meta, slow loads, and duplicate titles in
+   908→                      seconds.
+   909→                    </p>
+   910→                  </div>
+   911→                  <div className="mt-auto rounded-xl border border-border/50 bg-muted/30 p-4">
+   912→                    <div className="mb-2 flex items-center justify-between text-[11px] text-muted-foreground">
+   913→                      <span>Pages crawled this week</span>
+   914→                      <span className="text-foreground">1,284</span>
+   915→                    </div>
+   916→                    <BarChartMini />
+   917→                  </div>
+   918→                </GlowCard>
+   919→              </TiltCard>
+   920→            </motion.div>
+   921→
+   922→            {/* Small cards */}
+   923→            {FEATURES.slice(1, 5).map((f) => (
+   924→              <motion.div key={f.title} variants={staggerItem}>
+   925→                <TiltCard max={6} className="h-full rounded-2xl">
+   926→                  <GlowCard className="flex h-full flex-col gap-3 rounded-2xl p-5">
+   927→                    <GradientIcon icon={f.icon} accent={f.accent} />
+   928→                    <h3 className="text-base font-semibold tracking-tight">
+   929→                      {f.title}
+   930→                    </h3>
+   931→                    <p className="text-sm text-muted-foreground">{f.desc}</p>
+   932→                  </GlowCard>
+   933→                </TiltCard>
+   934→              </motion.div>
+   935→            ))}
+   936→
+   937→            {/* Large card 2 — Scheduled audits (full width) */}
+   938→            <motion.div
+   939→              variants={staggerItem}
+   940→              className="sm:col-span-2 lg:col-span-4"
+   941→            >
+   942→              <TiltCard max={4} className="h-full rounded-2xl">
+   943→                <GlowCard className="flex h-full flex-col gap-4 rounded-2xl p-6 sm:flex-row sm:items-center sm:justify-between">
+   944→                  <div className="flex max-w-xl flex-col gap-3">
+   945→                    <GradientIcon icon={CalendarClock} accent="chart-2" />
+   946→                    <h3 className="text-xl font-semibold tracking-tight">
+   947→                      Scheduled audits
+   948→                    </h3>
+   949→                    <p className="text-sm text-muted-foreground">
+   950→                      Set it and forget it. Hourly, daily, or weekly audits run
+   951→                      automatically and alert you the moment a regression slips
+   952→                      in — no manual re-checks, no surprises.
+   953→                    </p>
+   954→                  </div>
+   955→                  {/* weekly schedule strip */}
+   956→                  <div className="flex gap-2">
+   957→                    {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => {
+   958→                      const today = i === 3;
+   959→                      const scheduled = i < 5;
+   960→                      return (
+   961→                        <div
+   962→                          key={i}
+   963→                          className={cn(
+   964→                            "flex h-14 w-9 flex-col items-center justify-center gap-1 rounded-lg border text-[10px] font-medium",
+   965→                            today
+   966→                              ? "border-primary bg-primary/15 text-primary"
+   967→                              : scheduled
+   968→                                ? "border-border/60 bg-muted/40 text-muted-foreground"
+   969→                                : "border-dashed border-border/50 text-muted-foreground/50"
+   970→                          )}
+   971→                        >
+   972→                          <span>{d}</span>
+   973→                          {today ? (
+   974→                            <span className="relative flex h-1.5 w-1.5">
+   975→                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+   976→                              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+   977→                            </span>
+   978→                          ) : scheduled ? (
+   979→                            <Check className="h-3 w-3 text-emerald-500" />
+   980→                          ) : null}
+   981→                        </div>
+   982→                      );
+   983→                    })}
+   984→                  </div>
+   985→                </GlowCard>
+   986→              </TiltCard>
+   987→            </motion.div>
+   988→          </motion.div>
+   989→        </div>
+   990→      </section>
+   991→
+   992→      {/* ============ HOW IT WORKS ============ */}
+   993→      <section id="how" className="relative scroll-mt-24 py-20 sm:py-28">
+   994→        <div className="mx-auto max-w-6xl px-5">
+   995→          <SectionHeading
+   996→            eyebrow="How it works"
+   997→            title={
+   998→              <>
+   999→                From URL to ranking in{" "}
+  1000→                <span className="brand-gradient-text">three steps</span>
+  1001→              </>
+  1002→            }
+  1003→            desc="No setup wizard. No agency retainer. Just drop in your URL and watch SEOScout go to work."
+  1004→          />
+  1005→
+  1006→          <div className="relative mt-16">
+  1007→            {/* connecting line (desktop) */}
+  1008→            <div
+  1009→              aria-hidden
+  1010→              className="absolute left-0 right-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent md:block"
+  1011→            />
+  1012→            <motion.div
+  1013→              variants={staggerContainer}
+  1014→              initial="hidden"
+  1015→              whileInView="show"
+  1016→              viewport={{ once: true, margin: "-80px" }}
+  1017→              className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8"
+  1018→            >
+  1019→              {STEPS.map((step, i) => (
+  1020→                <motion.div
+  1021→                  key={step.title}
+  1022→                  variants={staggerItem}
+  1023→                  className="relative flex flex-col items-center text-center"
+  1024→                >
+  1025→                  <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-full brand-gradient text-white shadow-lg shadow-primary/30">
+  1026→                    <step.icon className="h-6 w-6" />
+  1027→                    <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-card text-xs font-bold text-primary">
+  1028→                      {i + 1}
+  1029→                    </span>
+  1030→                  </div>
+  1031→                  <h3 className="text-lg font-semibold tracking-tight">
+  1032→                    {step.title}
+  1033→                  </h3>
+  1034→                  <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+  1035→                    {step.desc}
+  1036→                  </p>
+  1037→                </motion.div>
+  1038→              ))}
+  1039→            </motion.div>
+  1040→          </div>
+  1041→        </div>
+  1042→      </section>
+  1043→
+  1044→      {/* ============ LIVE STATS BAND ============ */}
+  1045→      <section className="relative py-12 sm:py-16">
+  1046→        <div className="mx-auto max-w-6xl px-5">
+  1047→          <div className="glass-panel relative overflow-hidden rounded-3xl px-6 py-12 sm:px-12">
+  1048→            <div className="absolute inset-0 dot-grid opacity-30" aria-hidden />
+  1049→            <div className="relative grid grid-cols-2 gap-8 md:grid-cols-4">
+  1050→              {LIVE_STATS.map((stat) => (
+  1051→                <Reveal key={stat.label} className="text-center">
+  1052→                  <div className="text-3xl font-bold tracking-tight text-glow sm:text-4xl md:text-5xl">
+  1053→                    {stat.prefix}
+  1054→                    <AnimatedCounter
+  1055→                      value={stat.value}
+  1056→                      format={(n) => Math.round(n).toLocaleString()}
+  1057→                    />
+  1058→                    {stat.suffix}
+  1059→                  </div>
+  1060→                  <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground sm:text-sm">
+  1061→                    {stat.label}
+  1062→                  </div>
+  1063→                </Reveal>
+  1064→              ))}
+  1065→            </div>
+  1066→          </div>
+  1067→        </div>
+  1068→      </section>
+  1069→
+  1070→      {/* ============ TESTIMONIALS ============ */}
+  1071→      <section className="relative py-20 sm:py-28">
+  1072→        <div className="mx-auto max-w-6xl px-5">
+  1073→          <SectionHeading
+  1074→            eyebrow="Testimonials"
+  1075→            title={
+  1076→              <>
+  1077→                Loved by{" "}
+  1078→                <span className="brand-gradient-text">SEO teams</span>
+  1079→              </>
+  1080→            }
+  1081→            desc="Founders, growth leads, and agencies use SEOScout to ship faster and report smarter."
+  1082→          />
+  1083→
+  1084→          <motion.div
+  1085→            variants={staggerContainer}
+  1086→            initial="hidden"
+  1087→            whileInView="show"
+  1088→            viewport={{ once: true, margin: "-80px" }}
+  1089→            className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3"
+  1090→          >
+  1091→            {TESTIMONIALS.map((t) => (
+  1092→              <motion.div key={t.name} variants={staggerItem}>
+  1093→                <GlowCard className="flex h-full flex-col gap-5 rounded-2xl p-6">
+  1094→                  <div className="flex gap-0.5 text-amber-400">
+  1095→                    {Array.from({ length: 5 }).map((_, i) => (
+  1096→                      <Star key={i} className="h-4 w-4 fill-current" />
+  1097→                    ))}
+  1098→                  </div>
+  1099→                  <p className="flex-1 text-sm leading-relaxed text-foreground/90">
+  1100→                    “{t.quote}”
+  1101→                  </p>
+  1102→                  <div className="flex items-center gap-3">
+  1103→                    <div className="flex h-10 w-10 items-center justify-center rounded-full brand-gradient text-sm font-semibold text-white">
+  1104→                      {t.initials}
+  1105→                    </div>
+  1106→                    <div>
+  1107→                      <div className="text-sm font-semibold">{t.name}</div>
+  1108→                      <div className="text-xs text-muted-foreground">{t.role}</div>
+  1109→                    </div>
+  1110→                  </div>
+  1111→                </GlowCard>
+  1112→              </motion.div>
+  1113→            ))}
+  1114→          </motion.div>
+  1115→        </div>
+  1116→      </section>
+  1117→
+  1118→      {/* ============ PRICING ============ */}
+  1119→      <section id="pricing" className="relative scroll-mt-24 py-20 sm:py-28">
+  1120→        <div className="mx-auto max-w-6xl px-5">
+  1121→          <SectionHeading
+  1122→            eyebrow="Pricing"
+  1123→            title={
+  1124→              <>
+  1125→                Simple pricing that{" "}
+  1126→                <span className="brand-gradient-text">scales with you</span>
+  1127→              </>
+  1128→            }
+  1129→            desc="Start free for 14 days. No credit card required. Cancel anytime."
+  1130→          />
+  1131→
+  1132→          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+  1133→            {PLANS.map((plan) => (
+  1134→              <Reveal key={plan.name}>
+  1135→                <div
+  1136→                  className={cn(
+  1137→                    "relative flex h-full flex-col rounded-2xl border bg-card p-6 transition-colors",
+  1138→                    plan.highlighted
+  1139→                      ? "conic-border border-primary/40 glow-primary"
+  1140→                      : "border-border/60 hover:border-border"
+  1141→                  )}
+  1142→                >
+  1143→                  {plan.highlighted && (
+  1144→                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+  1145→                      <Badge className="rounded-full bg-primary px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary-foreground shadow-md">
+  1146→                        <Sparkles className="h-3 w-3" />
+  1147→                        Most popular
+  1148→                      </Badge>
+  1149→                    </div>
+  1150→                  )}
+  1151→
+  1152→                  <div className="mb-1 text-sm font-semibold text-primary">
+  1153→                    {plan.name}
+  1154→                  </div>
+  1155→                  <div className="text-xs text-muted-foreground">
+  1156→                    {plan.tagline}
+  1157→                  </div>
+  1158→
+  1159→                  <div className="mt-5 flex items-baseline gap-1">
+  1160→                    <span className="text-4xl font-bold tracking-tight">
+  1161→                      ${plan.price}
+  1162→                    </span>
+  1163→                    <span className="text-sm text-muted-foreground">/mo</span>
+  1164→                  </div>
+  1165→
+  1166→                  <Separator className="my-5" />
+  1167→
+  1168→                  <ul className="flex-1 space-y-3">
+  1169→                    {plan.features.map((feat) => (
+  1170→                      <li
+  1171→                        key={feat}
+  1172→                        className="flex items-start gap-2.5 text-sm"
+  1173→                      >
+  1174→                        <span
+  1175→                          className={cn(
+  1176→                            "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
+  1177→                            plan.highlighted
+  1178→                              ? "bg-primary text-primary-foreground"
+  1179→                              : "bg-primary/15 text-primary"
+  1180→                          )}
+  1181→                        >
+  1182→                          <Check className="h-2.5 w-2.5" />
+  1183→                        </span>
+  1184→                        <span className="text-foreground/90">{feat}</span>
+  1185→                      </li>
+  1186→                    ))}
+  1187→                  </ul>
+  1188→
+  1189→                  <MagneticButton
+  1190→                    as="button"
+  1191→                    onClick={onStart}
+  1192→                    className={cn(
+  1193→                      "mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors",
+  1194→                      plan.highlighted
+  1195→                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+  1196→                        : "border border-border bg-background text-foreground hover:bg-accent"
+  1197→                    )}
+  1198→                  >
+  1199→                    {plan.cta}
+  1200→                    <ArrowRight className="h-4 w-4" />
+  1201→                  </MagneticButton>
+  1202→                </div>
+  1203→              </Reveal>
+  1204→            ))}
+  1205→          </div>
+  1206→        </div>
+  1207→      </section>
+  1208→
+  1209→      {/* ============ FINAL CTA ============ */}
+  1210→      <section className="relative py-20 sm:py-28">
+  1211→        <div className="mx-auto max-w-5xl px-5">
+  1212→          <div className="glass-panel noise-overlay relative overflow-hidden rounded-3xl px-6 py-16 text-center sm:px-12 sm:py-20">
+  1213→            {/* inner glow orbs */}
+  1214→            <div
+  1215→              aria-hidden
+  1216→              className="absolute -left-20 -top-20 h-60 w-60 rounded-full bg-primary/30 blur-3xl"
+  1217→            />
+  1218→            <div
+  1219→              aria-hidden
+  1220→              className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-chart-2/30 blur-3xl"
+  1221→            />
+  1222→
+  1223→            <div className="relative">
+  1224→              <Reveal>
+  1225→                <Badge
+  1226→                  variant="secondary"
+  1227→                  className="mb-5 rounded-full border-primary/20 bg-primary/10 px-3 text-[11px] font-medium uppercase tracking-wider text-primary"
+  1228→                >
+  1229→                  Get started
+  1230→                </Badge>
+  1231→              </Reveal>
+  1232→              <Reveal delay={0.05}>
+  1233→                <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+  1234→                  Ready to automate your SEO?
+  1235→                </h2>
+  1236→              </Reveal>
+  1237→              <Reveal delay={0.1}>
+  1238→                <p className="mx-auto mt-4 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
+  1239→                  Join thousands of teams shipping SEO wins with SEOScout. Free
+  1240→                  for 14 days, no credit card required.
+  1241→                </p>
+  1242→              </Reveal>
+  1243→              <Reveal delay={0.15}>
+  1244→                <div className="mt-8 flex justify-center">
+  1245→                  <MagneticButton
+  1246→                    as="button"
+  1247→                    onClick={onStart}
+  1248→                    className="glow-primary inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-8 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+  1249→                  >
+  1250→                    Start free
+  1251→                    <ArrowRight className="h-4 w-4" />
+  1252→                  </MagneticButton>
+  1253→                </div>
+  1254→              </Reveal>
+  1255→              <Reveal delay={0.2}>
+  1256→                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+  1257→                  <span className="flex items-center gap-1.5">
+  1258→                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+  1259→                    14-day free trial
+  1260→                  </span>
+  1261→                  <span className="flex items-center gap-1.5">
+  1262→                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+  1263→                    No credit card
+  1264→                  </span>
+  1265→                  <span className="flex items-center gap-1.5">
+  1266→                    <Shield className="h-3.5 w-3.5 text-emerald-500" />
+  1267→                    Cancel anytime
+  1268→                  </span>
+  1269→                </div>
+  1270→              </Reveal>
+  1271→            </div>
+  1272→          </div>
+  1273→        </div>
+  1274→      </section>
+  1275→
+  1276→      {/* ============ FOOTER ============ */}
+  1277→      <footer className="relative border-t border-border/60 pt-16">
+  1278→        <div className="mx-auto max-w-6xl px-5">
+  1279→          <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
+  1280→            {/* brand col */}
+  1281→            <div className="col-span-2">
+  1282→              <div className="flex items-center gap-2.5">
+  1283→                <div className="flex h-9 w-9 items-center justify-center rounded-xl brand-gradient text-white shadow-md shadow-primary/30">
+  1284→                  <Search className="h-4.5 w-4.5" />
+  1285→                </div>
+  1286→                <span className="text-base font-semibold tracking-tight">
+  1287→                  SEO<span className="text-primary">Scout</span>
+  1288→                </span>
+  1289→              </div>
+  1290→              <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+  1291→                AI-Powered SEO automation. Crawl, audit, generate, and track —
+  1292→                all in one intelligent platform.
+  1293→              </p>
+  1294→              <div className="mt-5 flex gap-2">
+  1295→                {[Twitter, Github, Linkedin].map((Icon, i) => (
+  1296→                  <a
+  1297→                    key={i}
+  1298→                    href="#"
+  1299→                    onClick={(e) => e.preventDefault()}
+  1300→                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground"
+  1301→                    aria-label="Social link"
+  1302→                  >
+  1303→                    <Icon className="h-4 w-4" />
+  1304→                  </a>
+  1305→                ))}
+  1306→              </div>
+  1307→            </div>
+  1308→
+  1309→            {/* link cols */}
+  1310→            {FOOTER_COLS.map((col) => (
+  1311→              <div key={col.title}>
+  1312→                <h4 className="text-sm font-semibold">{col.title}</h4>
+  1313→                <ul className="mt-3 space-y-2">
+  1314→                  {col.links.map((link) => (
+  1315→                    <li key={link}>
+  1316→                      <a
+  1317→                        href="#"
+  1318→                        onClick={(e) => e.preventDefault()}
+  1319→                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1320→                      >
+  1321→                        {link}
+  1322→                      </a>
+  1323→                    </li>
+  1324→                  ))}
+  1325→                </ul>
+  1326→              </div>
+  1327→            ))}
+  1328→          </div>
+  1329→
+  1330→          <Separator className="my-8" />
+  1331→
+  1332→          <div className="flex flex-col items-center justify-between gap-4 pb-8 sm:flex-row">
+  1333→            <p className="text-xs text-muted-foreground">
+  1334→              © {new Date().getFullYear()} SEOScout, Inc. All rights reserved.
+  1335→            </p>
+  1336→            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+  1337→              <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+  1338→              All systems operational
+  1339→            </div>
+  1340→          </div>
+  1341→        </div>
+  1342→      </footer>
+  1343→    </div>
+  1344→  );
+  1345→}
+  1346→
+  1347→/* ------------------------------------------------------------------ */
+  1348→/* Hero stat                                                          */
+  1349→/* ------------------------------------------------------------------ */
+  1350→
+  1351→function HeroStat({
+  1352→  value,
+  1353→  label,
+  1354→  prefix,
+  1355→  suffix,
+  1356→}: {
+  1357→  value: number;
+  1358→  label: string;
+  1359→  prefix?: string;
+  1360→  suffix?: string;
+  1361→}) {
+  1362→  return (
+  1363→    <div className="flex flex-col items-center">
+  1364→      <span className="text-xl font-bold tracking-tight sm:text-2xl">
+  1365→        {prefix}
+  1366→        <AnimatedCounter
+  1367→          value={value}
+  1368→          format={(n) => Math.round(n).toLocaleString()}
+  1369→        />
+  1370→        {suffix}
+  1371→      </span>
+  1372→      <span className="text-xs text-muted-foreground">{label}</span>
+  1373→    </div>
+  1374→  );
+  1375→}
+  1376→
