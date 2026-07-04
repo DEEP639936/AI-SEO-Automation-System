@@ -1,0 +1,11 @@
+{
+  "name": "seo-ml-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Python FastAPI service providing NLP, ML, Deep Learning, and RAG capabilities for SEOScout",
+  "scripts": {
+    "dev": "python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload",
+    "start": "python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8001",
+    "train": "python3 -m app.train"
+  }
+}

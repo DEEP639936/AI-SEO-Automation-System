@@ -10,6 +10,7 @@ import {
 } from "@/hooks/use-api";
 import { useUI } from "@/lib/store";
 import { PageHeader } from "@/components/shared/page-header";
+import { ContentIntelligence } from "./content-intelligence";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Markdown } from "@/components/shared/markdown";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -161,9 +162,16 @@ function GeneratePanel() {
         </CardContent>
       </Card>
 
-      {/* output */}
-      <div className="lg:col-span-3">
+      {/* output + intelligence */}
+      <div className="lg:col-span-3 space-y-4">
         <GenerateOutput loading={gen.isPending} data={data} />
+        {data?.body && (
+          <ContentIntelligence
+            text={data.body}
+            keyword={keyword}
+            headingCount={data.body.split("\n").filter((l) => l.startsWith("#")).length}
+          />
+        )}
       </div>
     </div>
   );

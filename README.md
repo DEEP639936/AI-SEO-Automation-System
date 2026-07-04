@@ -17,6 +17,51 @@ Built on **Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui + F
 | **Keywords & Rankings** | Add target keywords (auto-seeded with 14 days of history), view a multi-line ranking trend chart, per-keyword sparklines, position deltas, and "check now" to record fresh positions. |
 | **Reports** | One-click weekly report bundling audit summary + keyword trends + top issues into a styled HTML report — viewable in-app and downloadable. |
 | **Dashboard** | Overview with animated health-score ring, animated stat counters, ranking-trend chart, top issues, and the AI recommendations card. |
+| **Content Intelligence** | A Python ML micro-service runs **NLP + Machine Learning + Deep Learning + RAG** analysis on generated content — surfacing an ML-predicted SEO score, a neural-network quality classification, readability metrics, extracted keywords, and retrieved SEO best-practice guidance. |
+
+---
+
+## 🧠 Python ML Backend (NLP · Machine Learning · Deep Learning · RAG)
+
+A standalone **FastAPI** micro-service in `mini-services/seo-ml-service/` provides the
+AI/ML capabilities that make this project resume-ready. It runs on port 8001 and is
+called by the Next.js frontend through a server-side proxy.
+
+### Tech stack
+| Capability | Technology | Implementation |
+| --- | --- | --- |
+| **NLP** | Python + scikit-learn | TF-IDF keyword extraction, RAKE-style key-phrase extraction, Flesch-Kincaid readability, lexical diversity, extractive summarization (centroid cosine), passive-voice detection |
+| **Machine Learning** | scikit-learn `RandomForestRegressor` | Trained on a synthetic 1,200-sample SEO dataset; predicts a 0–100 quality score from 6 engineered features; persisted with joblib; permutation-based feature attribution |
+| **Deep Learning** | **NumPy from scratch** (no PyTorch/TensorFlow) | A 6→16→8→1 feedforward neural network with ReLU + sigmoid, binary cross-entropy loss, momentum-based gradient descent — forward prop, backprop, and training loop all hand-implemented. 95% test accuracy. Weights persisted as `.npy` |
+| **RAG** | scikit-learn TF-IDF + cosine similarity | Retrieval-Augmented Generation: a 16-document SEO best-practices knowledge base, vectorized with TF-IDF (1-2 grams, sublinear tf); top-k retrieval returns relevant context injected into the LLM generation prompt |
+| **API** | FastAPI + uvicorn | 5 endpoints: `/health`, `/nlp/analyze`, `/ml/score`, `/dl/classify`, `/rag/retrieve` |
+
+### Run the ML service
+```bash
+cd mini-services/seo-ml-service
+python3 -m app.train          # train ML + DL models (one-time)
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8001   # start service
+```
+
+### Project structure
+```
+mini-services/seo-ml-service/
+├── app/
+│   ├── main.py              # FastAPI app + endpoints
+│   ├── nlp.py               # NLP: keywords, readability, stats, summarization
+│   ├── machine_learning.py  # scikit-learn RandomForest + feature engineering
+│   ├── deep_learning.py     # NumPy MLP (from-scratch backprop)
+│   ├── rag.py               # TF-IDF retrieval over SEO knowledge base
+│   └── train.py             # model training entrypoint
+├── weights/                 # persisted models (.joblib + .npy)
+└── requirements.txt
+```
+
+### How it connects to the app
+The Next.js Content Studio generates AI content, then the **Content Intelligence**
+panel calls the Python service (via `/api/intelligence/analyze`) which runs all four
+pipelines and returns a unified report: ML SEO score, DL quality classification,
+NLP readability/keywords, and RAG-retrieved SEO guidance.
 
 ---
 

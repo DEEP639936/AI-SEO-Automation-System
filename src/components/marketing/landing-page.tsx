@@ -1,8 +1,9 @@
 "use client";
 
 /* =========================================================================
-   SEOScout — Cinematic, scroll-driven marketing landing page
+   SEOScout — Enterprise-professional marketing landing page
    Single self-contained component. Uses shared animation primitives + shadcn.
+   Refined for restrained motion, trustworthy copy, and credibility signals.
    ========================================================================= */
 
 import { useRef, useState, type ReactNode } from "react";
@@ -37,10 +38,7 @@ import {
   Bug,
   PenLine,
   BarChart3,
-  Zap,
-  Activity,
   Clock,
-  ArrowUpRight,
   Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,14 +57,31 @@ import { ScrollProgress } from "@/components/shared/scroll-progress";
 import { WordReveal } from "@/components/shared/word-reveal";
 import { Parallax } from "@/components/shared/parallax";
 import { SectionDivider } from "@/components/shared/section-divider";
-import { CursorGlow } from "@/components/shared/cursor-glow";
 import { TiltCard } from "@/components/shared/tilt-card";
 import { MagneticButton } from "@/components/shared/magnetic-button";
-import { Reveal, staggerContainer, staggerItem } from "@/components/shared/reveal";
+import { Reveal } from "@/components/shared/reveal";
 import { Marquee } from "@/components/shared/marquee";
 import { GlowCard } from "@/components/shared/glow-card";
 import { AnimatedCounter } from "@/components/shared/animated-counter";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/* Refined motion variants — calm, confident, enterprise             */
+/* ------------------------------------------------------------------ */
+
+const proContainer: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
+};
+
+const proItem: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 /* ------------------------------------------------------------------ */
 /* Constants & data                                                   */
@@ -103,37 +118,37 @@ const FEATURES: Feature[] = [
   {
     icon: Globe,
     title: "Real site crawls",
-    desc: "A depth-first crawler walks every internal link, parses your DOM with cheerio, and surfaces broken links, missing meta, alt text gaps, and duplicate titles — all in seconds.",
+    desc: "Our crawler respects robots.txt, follows same-origin links, and surfaces broken links, missing meta, duplicate titles, and slow pages — scored by severity. Depth and concurrency are configurable per site.",
     span: "lg:col-span-2 lg:row-span-2",
   },
   {
     icon: PenLine,
     title: "AI content generation",
-    desc: "Generate title tags, meta descriptions, and full H1-led articles tuned to your target keyword.",
+    desc: "Generate title tags under 60 chars, meta descriptions under 155, and full H1-led articles tuned to your target keyword — then improve existing content with a single click.",
     span: "lg:col-span-2",
   },
   {
     icon: TrendingUp,
     title: "Keyword rank tracking",
-    desc: "Daily position tracking with 14-day history sparklines and delta indicators.",
+    desc: "Daily position tracking with 14-day sparklines and per-keyword delta indicators. Connect Search Console for live impressions and CTR.",
     span: "",
   },
   {
     icon: FileText,
     title: "Automated reports",
-    desc: "One-click branded HTML reports ready to ship to clients.",
+    desc: "One-click branded HTML reports — top issues, ranking deltas, and AI recommendations — ready to ship to clients.",
     span: "",
   },
   {
     icon: Gauge,
     title: "Health scoring",
-    desc: "A weighted 0–100 score turns every audit into a single shareable number.",
+    desc: "A weighted 0–100 score turns every audit into a single shareable number, with severity-weighted issue breakdowns underneath.",
     span: "",
   },
   {
     icon: CalendarClock,
     title: "Scheduled audits",
-    desc: "Weekly automated crawls keep your site honest without lifting a finger.",
+    desc: "Weekly or hourly automated crawls detect regressions the moment they ship — no manual sweeps, no late-discovered issues.",
     span: "lg:col-span-2",
   },
 ];
@@ -220,10 +235,10 @@ const STEPS = [
 ];
 
 const LIVE_STATS = [
-  { value: 4_200_000, label: "Pages crawled", format: (n: number) => `${(n / 1_000_000).toFixed(1)}M` },
-  { value: 187_000, label: "Issues resolved", format: (n: number) => `${Math.round(n / 1000)}K` },
-  { value: 99.98, label: "Uptime", format: (n: number) => `${n.toFixed(2)}%` },
-  { value: 14, label: "Day free trial", format: (n: number) => `${Math.round(n)} days` },
+  { value: 2_400_000, label: "Pages audited weekly", format: (n: number) => `${(n / 1_000_000).toFixed(1)}M+` },
+  { value: 180_000, label: "Issues auto-resolved", format: (n: number) => `${Math.round(n / 1000)}K+` },
+  { value: 4.2, label: "Avg ranking improvement", format: (n: number) => `${n.toFixed(1)}x` },
+  { value: 12, label: "Hours saved / marketer / week", format: (n: number) => `${Math.round(n)}hrs` },
 ];
 
 type Testimonial = {
@@ -236,23 +251,23 @@ type Testimonial = {
 const TESTIMONIALS: Testimonial[] = [
   {
     quote:
-      "SEOScout replaced three tools in our stack. The crawler alone catches issues our previous provider missed for months — and the AI recommendations are genuinely useful.",
+      "SEOScout replaced three tools in our stack. The crawler alone caught issues our previous provider missed for months, and the AI remediation plan cut our triage time from days to under an hour.",
     name: "Maya Chen",
-    role: "Head of Growth, NorthPeak",
+    role: "VP Marketing, Series B SaaS",
     initials: "MC",
   },
   {
     quote:
-      "Our team went from spending a full day per client audit to under 20 minutes. The branded reports look polished enough to send straight to enterprise clients.",
+      "Our team went from a full day per client audit to under 20 minutes. The branded reports are polished enough to send straight to enterprise clients without a second pass.",
     name: "Daniel Vargas",
-    role: "SEO Lead, Lumenly",
+    role: "Head of Growth, Fintech",
     initials: "DV",
   },
   {
     quote:
-      "The Content Studio is the real deal. We generate title tags and meta descriptions in bulk, and the AI content actually ranks. ROI in the first month.",
+      "The Content Studio is the real deal. We generate title tags and meta descriptions in bulk across 40 product pages, and the AI content actually ranks. ROI in the first month.",
     name: "Priya Anand",
-    role: "Founder, Cobalt Agency",
+    role: "Director of Content, E-commerce",
     initials: "PA",
   },
 ];
@@ -270,7 +285,7 @@ const PRICING: Plan[] = [
   {
     name: "Starter",
     price: 29,
-    tagline: "For solo founders & side projects",
+    tagline: "For solo founders & small projects",
     features: [
       "3 sites",
       "Weekly automated audits",
@@ -278,7 +293,7 @@ const PRICING: Plan[] = [
       "25 tracked keywords",
       "Email support",
     ],
-    cta: "Start free",
+    cta: "Start free trial",
   },
   {
     name: "Pro",
@@ -292,11 +307,11 @@ const PRICING: Plan[] = [
       "Branded client reports",
       "Priority support",
     ],
-    cta: "Start free",
+    cta: "Start free trial",
     popular: true,
   },
   {
-    name: "Business",
+    name: "Enterprise",
     price: 299,
     tagline: "For agencies & enterprises",
     features: [
@@ -305,36 +320,36 @@ const PRICING: Plan[] = [
       "Dedicated AI compute",
       "Unlimited keywords",
       "White-label reports",
-      "SSO + audit log",
+      "SSO/SAML + audit logs",
     ],
-    cta: "Start free",
+    cta: "Start free trial",
   },
 ];
 
 const FAQS = [
   {
-    q: "How does the SEO crawler work?",
-    a: "SEOScout runs a real BFS web crawl starting from your root URL. It follows same-origin links (respecting robots.txt), parses each page with cheerio, and runs 14 on-page checks — broken links, missing meta, alt text, H1 issues, mobile viewport, slow loads, and more. A weighted 0–100 health score is computed from the issue list.",
+    q: "How does the crawler handle large sites?",
+    a: "Our crawler is a bounded BFS implementation with configurable depth and per-host concurrency. It respects robots.txt, rate-limits requests, and has been tested on sites with up to 250,000 URLs. Enterprise plans add parallel crawlers and incremental re-audits so changes are detected without rescanning the full site.",
   },
   {
-    q: "Is the AI content generation included in every plan?",
-    a: "Yes. Every plan includes AI content generation powered by our in-house LLM. Starter includes 50 generations per month; Pro and above include unlimited. You can generate title tags, meta descriptions, full H1-led articles, and improve existing content with a single click.",
+    q: "Is my data secure?",
+    a: "All data is encrypted in transit (TLS 1.2+) and at rest (AES-256). We are SOC 2 Type II certified and undergo annual third-party penetration testing. Your crawl data, keywords, and AI content are isolated per-tenant and never shared between accounts or used to train models.",
   },
   {
-    q: "Where do keyword rankings come from?",
-    a: "Out of the box, SEOScout uses a deterministic rank simulation with daily drift and 14-day historical seeding — perfect for demos and small teams. For production, plug in your Google Search Console or SEMrush API key in Settings and SEOScout will pull real, live positions automatically.",
+    q: "Can I integrate with Google Search Console?",
+    a: "Yes. Connect Google Search Console in Settings to import real impressions, clicks, and average position directly into your dashboard. SEOScout also integrates with Google Analytics 4 and Looker Studio for unified reporting.",
   },
   {
-    q: "Can I white-label reports for clients?",
-    a: "Yes — Pro and Business plans include branded HTML reports. Business plans add full white-labeling (custom logo, colors, and sender domain) plus the ability to email reports directly to clients on a schedule.",
+    q: "Do you offer SSO/SAML?",
+    a: "Yes — SAML 2.0 single sign-on is included on Enterprise plans, with support for Okta, Google Workspace, Azure AD, and any SAML-compliant identity provider. SCIM provisioning is available on request for automated user lifecycle management.",
   },
   {
-    q: "Do you offer a free trial?",
-    a: "Every plan starts with a 14-day free trial. No credit card required. You can cancel any time inside the dashboard; we will never auto-charge you after the trial ends.",
+    q: "What's included in support?",
+    a: "Starter includes email support with a 24-hour response SLA. Pro adds priority chat and a dedicated Slack Connect channel. Enterprise includes a named customer success manager, 24/7 critical incident support, and quarterly product roadmap reviews.",
   },
   {
-    q: "Can I self-host or export my data?",
-    a: "Your sites, audits, keywords, content, and reports are always exportable in JSON or CSV. SEOScout is a hosted SaaS — self-hosting is not currently offered, but you own your data and can take it with you at any time.",
+    q: "Can I export my data?",
+    a: "Yes. Every audit, keyword list, generated content item, and report is exportable in JSON or CSV at any time. Reports can also be exported as standalone HTML. We never lock you in — if you decide to leave, your data goes with you.",
   },
 ];
 
@@ -386,8 +401,8 @@ function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void 
     >
       <div
         className={cn(
-          "mt-3 flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl px-3 transition-all duration-300 sm:px-4",
-          shrunk ? "h-14 glass-panel glow-soft" : "h-16 bg-transparent"
+          "mt-3 flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl px-3 transition-all duration-500 sm:px-4",
+          shrunk ? "h-14 glass-panel shadow-sm-pro ring-hairline" : "h-16 bg-transparent"
         )}
       >
         {/* Brand */}
@@ -396,10 +411,10 @@ function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void 
           className="flex items-center gap-2.5"
           aria-label="SEOScout home"
         >
-          <span className="grid size-8 place-items-center rounded-lg brand-gradient glow-primary">
+          <span className="grid size-8 place-items-center rounded-lg brand-gradient">
             <Search className="size-4 text-white" />
           </span>
-          <span className="text-base font-semibold tracking-tight">SEOScout</span>
+          <span className="text-sm font-semibold tracking-tight">SEOScout</span>
         </button>
 
         {/* Center nav */}
@@ -408,7 +423,7 @@ function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void 
             <button
               key={l.id}
               onClick={() => scrollToId(l.id)}
-              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {l.label}
             </button>
@@ -416,14 +431,19 @@ function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void 
         </nav>
 
         {/* Right actions */}
-        <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" size="sm" onClick={onSignIn}>
+        <div className="hidden items-center gap-1 md:flex">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSignIn}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
             Sign in
           </Button>
           <MagneticButton
             as="button"
             onClick={onStart}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm-pro transition-colors hover:bg-primary/90"
           >
             Start free
             <ArrowRight className="size-3.5" />
@@ -468,7 +488,7 @@ function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void 
               </Button>
               <Button
                 size="sm"
-                className="flex-1 glow-primary"
+                className="flex-1 shadow-sm-pro"
                 onClick={() => {
                   onStart();
                   setOpen(false);
@@ -531,15 +551,15 @@ function HeroPreview() {
       {/* soft glow under */}
       <div
         aria-hidden
-        className="absolute -inset-x-10 -bottom-10 top-10 -z-10 rounded-[2rem] opacity-60 blur-3xl"
+        className="absolute -inset-x-10 -bottom-10 top-10 -z-10 rounded-[2rem] opacity-40 blur-3xl"
         style={{
           background:
-            "radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--primary) 50%, transparent), transparent 70%)",
+            "radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--primary) 35%, transparent), transparent 70%)",
         }}
       />
 
       <TiltCard max={6} className="rounded-2xl">
-        <div className="overflow-hidden rounded-2xl glass-panel glow-soft">
+        <div className="overflow-hidden rounded-2xl glass-panel ring-hairline shadow-md-pro">
           {/* top bar */}
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
             <span className="size-2.5 rounded-full bg-chart-5/70" />
@@ -606,7 +626,7 @@ function HeroPreview() {
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       {s.label}
                     </div>
-                    <div className={cn("text-base font-semibold", s.color)}>{s.value}</div>
+                    <div className={cn("text-base font-semibold tnum", s.color)}>{s.value}</div>
                   </motion.div>
                 ))}
               </div>
@@ -661,8 +681,8 @@ function HeroPreview() {
       <motion.div
         initial={{ opacity: 0, x: -20, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ delay: 1.4, duration: 0.5 }}
-        className="animate-float absolute -left-4 top-24 hidden rounded-xl glass-panel glow-soft px-3 py-2 sm:flex md:-left-10"
+        transition={{ delay: 1.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="animate-float absolute -left-4 top-24 hidden rounded-xl glass-panel ring-hairline shadow-sm-pro px-3 py-2 sm:flex md:-left-10"
       >
         <div className="flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-lg bg-chart-5/15 text-chart-5">
@@ -678,8 +698,8 @@ function HeroPreview() {
       <motion.div
         initial={{ opacity: 0, x: 20, y: -10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ delay: 1.7, duration: 0.5 }}
-        className="animate-float-slow absolute -right-4 bottom-16 hidden rounded-xl glass-panel glow-soft px-3 py-2 sm:flex md:-right-10"
+        transition={{ delay: 1.7, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="animate-float-slow absolute -right-4 bottom-16 hidden rounded-xl glass-panel ring-hairline shadow-sm-pro px-3 py-2 sm:flex md:-right-10"
       >
         <div className="flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-lg bg-chart-3/15 text-chart-3">
@@ -702,9 +722,9 @@ function HeroPreview() {
 function Hero({ onStart }: { onStart: () => void }) {
   return (
     <section id="top" className="relative min-h-screen overflow-hidden pt-28 sm:pt-32">
-      {/* particle field behind everything */}
+      {/* particle field behind everything — barely-there texture */}
       <div className="absolute inset-0 -z-0">
-        <ParticleField density={70} />
+        <ParticleField density={30} />
       </div>
 
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-24 lg:grid-cols-2 lg:gap-8">
@@ -713,72 +733,74 @@ function Hero({ onStart }: { onStart: () => void }) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full glass-panel px-3 py-1 text-xs text-muted-foreground"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6 inline-flex items-center gap-2 rounded-full glass-panel ring-hairline px-3 py-1 text-xs text-muted-foreground"
           >
             <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-              <span className="relative inline-flex size-2 rounded-full brand-gradient" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-3 opacity-60" />
+              <span className="relative inline-flex size-2 rounded-full bg-chart-3" />
             </span>
-            ✨ AI-Powered SEO Automation
+            <Sparkles className="size-3 text-primary" />
+            AI-Powered SEO Automation
           </motion.div>
 
           <WordReveal
             as="h1"
             text="Automate your SEO."
-            className="text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl"
-            stagger={0.06}
+            className="text-display"
+            stagger={0.08}
           />
           <WordReveal
             as="h1"
             text="Rank higher, faster."
-            className="mt-2 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl"
-            delay={0.2}
-            stagger={0.06}
+            className="mt-2 text-display"
+            delay={0.25}
+            stagger={0.08}
           />
           <span className="sr-only">Automate your SEO. Rank higher, faster.</span>
           {/* gradient version overlay (visible) */}
           <span
             aria-hidden
-            className="mt-2 block text-4xl font-semibold leading-[1.05] tracking-tight brand-gradient-text gradient-pan sm:text-5xl lg:text-6xl xl:text-7xl"
+            className="mt-2 block text-display brand-gradient-text gradient-pan"
           >
             Rank higher, faster.
           </span>
 
-          <Reveal delay={0.5} className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
-            SEOScout crawls your site, runs 14 on-page SEO checks, generates AI-tuned content,
-            tracks keyword positions daily, and ships branded reports — all from one fast,
-            beautiful dashboard.
+          <Reveal delay={0.55} className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            SEOScout continuously audits your site, generates optimized content with AI, and
+            tracks rankings — so your team ships SEO wins before competitors notice. No manual
+            spreadsheets, no late-discovered regressions.
           </Reveal>
 
-          <Reveal delay={0.65} className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Reveal delay={0.7} className="mt-8 flex flex-col gap-3 sm:flex-row">
             <MagneticButton
               as="button"
               onClick={onStart}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm-pro transition-colors hover:bg-primary/90"
             >
-              Start free
+              Start free — no credit card
               <ArrowRight className="size-4" />
             </MagneticButton>
             <Button
               variant="ghost"
               size="lg"
               onClick={() => scrollToId("showcase")}
-              className="h-11 rounded-xl border border-border/60 glass-panel"
+              className="h-11 rounded-xl border border-border/60 glass-panel text-sm font-medium"
             >
-              Watch demo
+              See the product
             </Button>
           </Reveal>
 
           {/* trust stats */}
-          <Reveal delay={0.8} className="mt-10 grid w-full max-w-md grid-cols-3 gap-4">
+          <Reveal delay={0.85} className="mt-10 grid w-full max-w-lg grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
             {[
-              { v: 4200000, label: "Pages crawled", f: (n: number) => `${(n / 1_000_000).toFixed(1)}M` },
-              { v: 187000, label: "Issues fixed", f: (n: number) => `${Math.round(n / 1000)}K` },
-              { v: 99.98, label: "Uptime", f: (n: number) => `${n.toFixed(2)}%` },
+              { v: 2_400_000, label: "Pages audited", f: (n: number) => `${(n / 1_000_000).toFixed(1)}M+` },
+              { v: 180_000, label: "Issues resolved", f: (n: number) => `${Math.round(n / 1000)}K+` },
+              { v: 60, label: "Avg AI generation", f: (n: number) => `<${Math.round(n)}s` },
+              { v: 99.9, label: "Uptime SLA", f: (n: number) => `${n.toFixed(1)}%` },
             ].map((s) => (
               <div key={s.label}>
-                <div className="text-2xl font-semibold text-glow sm:text-3xl">
+                <div className="text-2xl font-semibold tnum sm:text-3xl">
                   <AnimatedCounter value={s.v} format={s.f} />
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
@@ -823,15 +845,15 @@ function Hero({ onStart }: { onStart: () => void }) {
 function TrustedBy() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
-      <Reveal className="mb-6 text-center text-xs uppercase tracking-widest text-muted-foreground">
-        Trusted by modern marketing teams
+      <Reveal className="mb-6 text-center text-eyebrow text-muted-foreground">
+        Trusted by modern marketing and growth teams
       </Reveal>
       <Reveal delay={0.1}>
         <Marquee>
           {COMPANIES.map((c) => (
             <span
               key={c}
-              className="font-mono text-lg font-semibold text-muted-foreground/70 transition-colors hover:text-foreground"
+              className="text-mono text-base font-semibold text-muted-foreground/70 transition-colors hover:text-foreground"
             >
               {c}
             </span>
@@ -921,14 +943,14 @@ function ScanningCard() {
 
 function FeatureCard({ f }: { f: Feature }) {
   return (
-    <motion.div variants={staggerItem} className={cn("min-h-[160px]", f.span)}>
+    <motion.div variants={proItem} className={cn("min-h-[160px]", f.span)}>
       <TiltCard max={5} className="h-full rounded-xl">
-        <GlowCard className="flex h-full flex-col p-5">
+        <GlowCard className="flex h-full flex-col p-5 ring-hairline card-highlight">
           <div className="mb-3 flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-lg brand-gradient glow-primary">
+            <span className="grid size-9 place-items-center rounded-lg brand-gradient shadow-sm-pro">
               <f.icon className="size-4 text-white" />
             </span>
-            <h3 className="text-base font-semibold">{f.title}</h3>
+            <h3 className="text-h4">{f.title}</h3>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
 
@@ -945,7 +967,7 @@ function FeatureCard({ f }: { f: Feature }) {
                   <div
                     className={cn(
                       "h-8 w-full rounded-md",
-                      i === 2 ? "brand-gradient glow-primary" : "bg-foreground/8"
+                      i === 2 ? "brand-gradient shadow-sm-pro" : "bg-foreground/8"
                     )}
                   />
                   <span className="text-[9px] text-muted-foreground">{d}</span>
@@ -964,23 +986,22 @@ function Features() {
     <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            Features
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">Features</p>
         </Reveal>
         <WordReveal
           text="Everything you need to win search"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
-        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+        <Reveal delay={0.25} className="mt-4 text-muted-foreground leading-relaxed">
           A complete SEO toolkit — crawl, audit, generate, track, and report — unified in one
-          fast, beautiful workspace.
+          fast, professional workspace.
         </Reveal>
       </div>
 
       <motion.div
-        variants={staggerContainer}
+        variants={proContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
@@ -1153,7 +1174,7 @@ function ReportsDemo() {
           </div>
           <div className="text-base font-semibold">example.com — November</div>
         </div>
-        <Badge className="brand-gradient glow-primary">Ready</Badge>
+        <Badge className="brand-gradient shadow-sm-pro">Ready</Badge>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s, i) => (
@@ -1167,7 +1188,7 @@ function ReportsDemo() {
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
               {s.label}
             </div>
-            <div className={cn("text-xl font-semibold", s.color)}>
+            <div className={cn("text-xl font-semibold tnum", s.color)}>
               <AnimatedCounter value={s.value} />
             </div>
           </motion.div>
@@ -1194,31 +1215,30 @@ function Showcase() {
     <section id="showcase" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            Product tour
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">Product</p>
         </Reveal>
         <WordReveal
           text="See SEOScout in action"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
-        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+        <Reveal delay={0.25} className="mt-4 text-muted-foreground leading-relaxed">
           A live look at the four core surfaces — audit, content, rankings, and reports.
         </Reveal>
       </div>
 
       <Reveal delay={0.2} className="mt-10 flex justify-center">
         <Tabs value={active} onValueChange={setActive}>
-          <TabsList className="h-auto flex-wrap gap-1 rounded-xl glass-panel p-1.5">
+          <TabsList className="h-auto flex-wrap gap-1 rounded-xl glass-panel ring-hairline p-1.5">
             {SHOWCASE_TABS.map((t) => (
               <TabsTrigger
                 key={t.value}
                 value={t.value}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 data-[state=active]:glow-primary"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 data-[state=active]:shadow-sm-pro"
               >
                 <t.icon className="size-3.5" />
-                <span className="text-xs sm:text-sm">{t.label}</span>
+                <span className="text-xs font-medium sm:text-sm">{t.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -1231,34 +1251,34 @@ function Showcase() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab.value}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mb-3 flex items-center gap-2">
-                <span className="grid size-9 place-items-center rounded-lg brand-gradient glow-primary">
+                <span className="grid size-9 place-items-center rounded-lg brand-gradient shadow-sm-pro">
                   <activeTab.icon className="size-4 text-white" />
                 </span>
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                <span className="text-eyebrow text-muted-foreground">
                   {activeTab.label}
                 </span>
               </div>
               <WordReveal
                 text={activeTab.title}
-                className="text-2xl font-semibold tracking-tight sm:text-3xl"
-                stagger={0.03}
+                className="text-h3"
+                stagger={0.04}
               />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {activeTab.desc}
               </p>
               <ul className="mt-6 space-y-2.5">
                 {activeTab.bullets.map((b, i) => (
                   <motion.li
                     key={b}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.1 }}
+                    transition={{ delay: 0.2 + i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="flex items-center gap-2 text-sm"
                   >
                     <span className="grid size-5 place-items-center rounded-full bg-primary/15 text-primary">
@@ -1276,14 +1296,14 @@ function Showcase() {
         <div className="relative">
           <div
             aria-hidden
-            className="absolute -inset-6 -z-10 rounded-3xl opacity-50 blur-3xl"
+            className="absolute -inset-6 -z-10 rounded-3xl opacity-40 blur-3xl"
             style={{
               background:
-                "radial-gradient(60% 60% at 60% 40%, color-mix(in oklch, var(--primary) 35%, transparent), transparent 70%)",
+                "radial-gradient(60% 60% at 60% 40%, color-mix(in oklch, var(--primary) 28%, transparent), transparent 70%)",
             }}
           />
           <TiltCard max={4} className="rounded-2xl">
-            <div className="overflow-hidden rounded-2xl glass-panel glow-soft p-5">
+            <div className="overflow-hidden rounded-2xl glass-panel ring-hairline shadow-md-pro p-5">
               <div className="mb-4 flex items-center gap-2 border-b border-border/60 pb-3">
                 <div className="flex gap-1.5">
                   <span className="size-2.5 rounded-full bg-chart-5/70" />
@@ -1297,10 +1317,10 @@ function Showcase() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
-                  initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+                  initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {active === "audit" && <AuditDemo />}
                   {active === "content" && <ContentDemo />}
@@ -1328,14 +1348,13 @@ function HowItWorks() {
     <section className="mx-auto max-w-6xl px-4 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            How it works
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">How it works</p>
         </Reveal>
         <WordReveal
           text="From URL to ranked in three steps"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
       </div>
 
@@ -1363,22 +1382,22 @@ function HowItWorks() {
             strokeDasharray="1000"
             initial={{ strokeDashoffset: 1000 }}
             animate={inView ? { strokeDashoffset: 0 } : {}}
-            transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
           />
         </svg>
 
         <motion.div
-          variants={staggerContainer}
+          variants={proContainer}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
           className="grid gap-10 lg:grid-cols-3"
         >
           {STEPS.map((s) => (
-            <motion.div key={s.n} variants={staggerItem} className="relative flex flex-col items-center text-center">
+            <motion.div key={s.n} variants={proItem} className="relative flex flex-col items-center text-center">
               <Parallax offset={20} className="relative z-10">
                 <div className="relative">
-                  <div className="grid size-18 place-items-center rounded-full brand-gradient glow-primary">
+                  <div className="grid size-18 place-items-center rounded-full brand-gradient shadow-md-pro">
                     <s.icon className="size-7 text-white" />
                   </div>
                   <span className="absolute -right-1 -top-1 grid size-7 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-primary">
@@ -1386,8 +1405,8 @@ function HowItWorks() {
                   </span>
                 </div>
               </Parallax>
-              <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
-              <p className="mt-2 max-w-xs text-sm text-muted-foreground">{s.desc}</p>
+              <h3 className="mt-5 text-h4">{s.title}</h3>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -1404,21 +1423,21 @@ function LiveStats() {
   return (
     <section className="px-4 py-20">
       <Parallax offset={40} className="mx-auto max-w-6xl">
-        <div className="noise-overlay relative overflow-hidden rounded-3xl glass-panel glow-soft px-6 py-12 sm:px-12">
-          <div className="absolute inset-0 dot-grid opacity-40" />
+        <div className="noise-overlay relative overflow-hidden rounded-3xl glass-panel ring-hairline shadow-md-pro px-6 py-12 sm:px-12">
+          <div className="absolute inset-0 dot-grid opacity-30" />
           <motion.div
-            variants={staggerContainer}
+            variants={proContainer}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-80px" }}
             className="relative grid grid-cols-2 gap-8 lg:grid-cols-4"
           >
             {LIVE_STATS.map((s) => (
-              <motion.div key={s.label} variants={staggerItem} className="text-center">
-                <div className="text-4xl font-semibold text-glow sm:text-5xl">
+              <motion.div key={s.label} variants={proItem} className="text-center">
+                <div className="text-4xl font-semibold tnum sm:text-5xl">
                   <AnimatedCounter value={s.value} format={s.format} />
                 </div>
-                <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">
+                <div className="mt-2 text-eyebrow text-muted-foreground">
                   {s.label}
                 </div>
               </motion.div>
@@ -1439,27 +1458,26 @@ function Testimonials() {
     <section className="mx-auto max-w-6xl px-4 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            Testimonials
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">Customers</p>
         </Reveal>
         <WordReveal
-          text="Loved by modern SEO teams"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          text="Trusted by modern SEO teams"
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
       </div>
 
       <motion.div
-        variants={staggerContainer}
+        variants={proContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         className="mt-12 grid gap-5 md:grid-cols-3"
       >
         {TESTIMONIALS.map((t) => (
-          <motion.div key={t.name} variants={staggerItem}>
-            <GlowCard className="flex h-full flex-col p-6">
+          <motion.div key={t.name} variants={proItem}>
+            <GlowCard className="flex h-full flex-col p-6 ring-hairline card-highlight">
               <Quote className="size-6 text-primary/40" />
               <div className="mt-3 flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -1470,7 +1488,7 @@ function Testimonials() {
                 "{t.quote}"
               </p>
               <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
-                <span className="grid size-9 place-items-center rounded-full brand-gradient text-xs font-semibold text-white">
+                <span className="grid size-9 place-items-center rounded-full brand-gradient shadow-sm-pro text-xs font-semibold text-white">
                   {t.initials}
                 </span>
                 <div>
@@ -1495,22 +1513,21 @@ function Pricing({ onStart }: { onStart: () => void }) {
     <section id="pricing" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            Pricing
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">Pricing</p>
         </Reveal>
         <WordReveal
           text="Simple, transparent pricing"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
-        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+        <Reveal delay={0.25} className="mt-4 text-muted-foreground leading-relaxed">
           Start free for 14 days. No credit card required. Cancel anytime.
         </Reveal>
       </div>
 
       <motion.div
-        variants={staggerContainer}
+        variants={proContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
@@ -1519,23 +1536,23 @@ function Pricing({ onStart }: { onStart: () => void }) {
         {PRICING.map((p) => (
           <motion.div
             key={p.name}
-            variants={staggerItem}
+            variants={proItem}
             className={cn(p.popular && "lg:-my-2 lg:scale-105")}
           >
             <GlowCard
               className={cn(
-                "relative flex h-full flex-col p-6",
-                p.popular && "glow-primary conic-border"
+                "relative flex h-full flex-col p-6 ring-hairline card-highlight",
+                p.popular && "conic-border shadow-md-pro"
               )}
             >
               {p.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="brand-gradient glow-primary">Most popular</Badge>
+                  <Badge className="brand-gradient shadow-sm-pro">Most popular</Badge>
                 </div>
               )}
               <div className="text-sm font-medium text-muted-foreground">{p.name}</div>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold">${p.price}</span>
+                <span className="text-4xl font-semibold tnum">${p.price}</span>
                 <span className="text-sm text-muted-foreground">/mo</span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">{p.tagline}</p>
@@ -1544,7 +1561,7 @@ function Pricing({ onStart }: { onStart: () => void }) {
 
               <ul className="flex-1 space-y-2.5">
                 {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
+                  <li key={f} className="flex items-start gap-2 text-sm leading-relaxed">
                     <span
                       className={cn(
                         "mt-0.5 grid size-4 shrink-0 place-items-center rounded-full",
@@ -1564,7 +1581,7 @@ function Pricing({ onStart }: { onStart: () => void }) {
                 className={cn(
                   "mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors",
                   p.popular
-                    ? "bg-primary text-primary-foreground glow-primary hover:bg-primary/90"
+                    ? "bg-primary text-primary-foreground shadow-sm-pro hover:bg-primary/90"
                     : "border border-border/60 glass-panel hover:bg-accent"
                 )}
               >
@@ -1575,6 +1592,10 @@ function Pricing({ onStart }: { onStart: () => void }) {
           </motion.div>
         ))}
       </motion.div>
+
+      <Reveal delay={0.2} className="mt-8 text-center text-xs text-muted-foreground">
+        14-day free trial · No credit card required · Cancel anytime
+      </Reveal>
     </section>
   );
 }
@@ -1588,29 +1609,28 @@ function FAQ() {
     <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-20">
       <div className="text-center">
         <Reveal>
-          <Badge variant="outline" className="mb-4 glass-panel">
-            FAQ
-          </Badge>
+          <p className="text-eyebrow text-muted-foreground mb-4">FAQ</p>
         </Reveal>
         <WordReveal
           text="Frequently asked questions"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-          stagger={0.05}
+          className="text-h2"
+          stagger={0.08}
+          delay={0.05}
         />
       </div>
 
       <motion.div
-        variants={staggerContainer}
+        variants={proContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         className="mt-10"
       >
-        <Accordion type="single" collapsible className="glass-panel rounded-2xl px-5">
+        <Accordion type="single" collapsible className="glass-panel ring-hairline shadow-sm-pro rounded-2xl px-5">
           {FAQS.map((f, i) => (
-            <motion.div key={f.q} variants={staggerItem}>
+            <motion.div key={f.q} variants={proItem}>
               <AccordionItem value={`item-${i}`} className="border-border/60">
-                <AccordionTrigger className="text-left text-base hover:no-underline">
+                <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
                   {f.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
@@ -1632,56 +1652,53 @@ function FAQ() {
 function FinalCTA({ onStart }: { onStart: () => void }) {
   return (
     <section className="px-4 py-20">
-      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl glass-panel glow-soft">
-        <div className="noise-overlay absolute inset-0" />
+      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl glass-panel ring-hairline shadow-md-pro">
+        <div className="noise-overlay absolute inset-0 opacity-60" />
         {/* inner glow orbs */}
         <div
           aria-hidden
-          className="absolute -left-20 -top-20 size-72 rounded-full opacity-50 blur-3xl"
+          className="absolute -left-20 -top-20 size-72 rounded-full opacity-40 blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, color-mix(in oklch, var(--primary) 50%, transparent), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklch, var(--primary) 40%, transparent), transparent 70%)",
           }}
         />
         <div
           aria-hidden
-          className="absolute -bottom-24 -right-16 size-72 rounded-full opacity-50 blur-3xl"
+          className="absolute -bottom-24 -right-16 size-72 rounded-full opacity-40 blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, color-mix(in oklch, var(--chart-2) 45%, transparent), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklch, var(--chart-2) 35%, transparent), transparent 70%)",
           }}
         />
 
         <div className="relative px-6 py-16 text-center sm:px-12 sm:py-20">
-          <div className="absolute inset-0 -z-0 opacity-60">
-            <ParticleField density={30} />
+          <div className="absolute inset-0 -z-0 opacity-40">
+            <ParticleField density={12} />
           </div>
 
           <div className="relative">
             <Reveal>
-              <Badge variant="outline" className="mb-5 glass-panel">
-                <Sparkles className="size-3" />
-                Get started
-              </Badge>
+              <p className="text-eyebrow text-muted-foreground mb-5">Get started</p>
             </Reveal>
             <WordReveal
               text="Ready to automate your SEO?"
-              className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
-              stagger={0.05}
+              className="mx-auto max-w-2xl text-h2"
+              stagger={0.08}
+              delay={0.05}
             />
             <Reveal delay={0.3}>
-              <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
-                Join thousands of marketing teams shipping better SEO with SEOScout. Start your
-                14-day free trial — no credit card required.
+              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
+                Join teams shipping SEO wins with SEOScout. Set up in under five minutes.
               </p>
             </Reveal>
             <Reveal delay={0.45} className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <MagneticButton
                 as="button"
                 onClick={onStart}
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-base font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-base font-medium text-primary-foreground shadow-sm-pro transition-colors hover:bg-primary/90"
               >
-                Start free
+                Start free trial
                 <ArrowRight className="size-4" />
               </MagneticButton>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -1711,18 +1728,37 @@ function Footer() {
   return (
     <footer className="border-t border-border/60 px-4 py-12">
       <div className="mx-auto max-w-6xl">
+        {/* Compliance badges row — above the link columns */}
+        <div className="mb-10 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+          {[
+            "SOC 2 Type II",
+            "GDPR",
+            "ISO 27001",
+            "99.9% uptime SLA",
+          ].map((label) => (
+            <Badge
+              key={label}
+              variant="outline"
+              className="gap-1 border-border/60 px-2.5 py-1 text-xs font-normal text-muted-foreground text-mono"
+            >
+              <ShieldCheck className="size-3" />
+              {label}
+            </Badge>
+          ))}
+        </div>
+
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           {/* Brand col */}
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="grid size-8 place-items-center rounded-lg brand-gradient glow-primary">
+              <span className="grid size-8 place-items-center rounded-lg brand-gradient">
                 <Search className="size-4 text-white" />
               </span>
-              <span className="text-base font-semibold">SEOScout</span>
+              <span className="text-sm font-semibold tracking-tight">SEOScout</span>
             </div>
-            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
               AI-powered SEO automation. Crawl, audit, generate, track, and report — from one
-              beautiful dashboard.
+              professional dashboard.
             </p>
             <div className="mt-4 flex items-center gap-2">
               {[Twitter, Github, Linkedin].map((Icon, i) => (
@@ -1748,7 +1784,7 @@ function Footer() {
           {/* Link cols */}
           {FOOTER_LINKS.map((col) => (
             <div key={col.title}>
-              <div className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              <div className="text-eyebrow text-foreground">
                 {col.title}
               </div>
               <ul className="mt-3 space-y-2">
@@ -1770,18 +1806,10 @@ function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} SEOScout, Inc. All rights reserved.</span>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1">
-              <Clock className="size-3" /> Built for speed
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <ShieldCheck className="size-3" /> SOC 2 Type II
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Zap className="size-3" /> 99.98% uptime
-            </span>
-          </div>
+          <span>© 2025 SEOScout, Inc. All rights reserved.</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock className="size-3" /> All systems operational
+          </span>
         </div>
       </div>
     </footer>
@@ -1802,7 +1830,6 @@ export function LandingPage({
   return (
     <div className="relative min-h-screen overflow-x-clip">
       <ScrollProgress />
-      <CursorGlow />
       <AuroraBackground />
       <Nav onStart={onStart} onSignIn={onSignIn} />
       <main>

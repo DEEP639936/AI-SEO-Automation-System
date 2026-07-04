@@ -1,0 +1,1827 @@
+     1→"use client";
+     2→
+     3→/* =========================================================================
+     4→   SEOScout — Cinematic, scroll-driven marketing landing page
+     5→   Single self-contained component. Uses shared animation primitives + shadcn.
+     6→   ========================================================================= */
+     7→
+     8→import { useRef, useState, type ReactNode } from "react";
+     9→import {
+    10→  motion,
+    11→  AnimatePresence,
+    12→  useScroll,
+    13→  useMotionValueEvent,
+    14→  useTransform,
+    15→  useInView,
+    16→  type Variants,
+    17→} from "framer-motion";
+    18→import {
+    19→  Search,
+    20→  ArrowRight,
+    21→  Sparkles,
+    22→  Globe,
+    23→  TrendingUp,
+    24→  FileText,
+    25→  Gauge,
+    26→  CalendarClock,
+    27→  Check,
+    28→  Star,
+    29→  ScanSearch,
+    30→  ShieldCheck,
+    31→  Twitter,
+    32→  Github,
+    33→  Linkedin,
+    34→  Menu,
+    35→  X,
+    36→  ChevronDown,
+    37→  Bug,
+    38→  PenLine,
+    39→  BarChart3,
+    40→  Zap,
+    41→  Activity,
+    42→  Clock,
+    43→  ArrowUpRight,
+    44→  Quote,
+    45→} from "lucide-react";
+    46→import { Button } from "@/components/ui/button";
+    47→import { Badge } from "@/components/ui/badge";
+    48→import { Separator } from "@/components/ui/separator";
+    49→import {
+    50→  Accordion,
+    51→  AccordionItem,
+    52→  AccordionTrigger,
+    53→  AccordionContent,
+    54→} from "@/components/ui/accordion";
+    55→import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    56→import { AuroraBackground } from "@/components/shared/aurora-background";
+    57→import { ParticleField } from "@/components/shared/particle-field";
+    58→import { ScrollProgress } from "@/components/shared/scroll-progress";
+    59→import { WordReveal } from "@/components/shared/word-reveal";
+    60→import { Parallax } from "@/components/shared/parallax";
+    61→import { SectionDivider } from "@/components/shared/section-divider";
+    62→import { CursorGlow } from "@/components/shared/cursor-glow";
+    63→import { TiltCard } from "@/components/shared/tilt-card";
+    64→import { MagneticButton } from "@/components/shared/magnetic-button";
+    65→import { Reveal, staggerContainer, staggerItem } from "@/components/shared/reveal";
+    66→import { Marquee } from "@/components/shared/marquee";
+    67→import { GlowCard } from "@/components/shared/glow-card";
+    68→import { AnimatedCounter } from "@/components/shared/animated-counter";
+    69→import { cn } from "@/lib/utils";
+    70→
+    71→/* ------------------------------------------------------------------ */
+    72→/* Constants & data                                                   */
+    73→/* ------------------------------------------------------------------ */
+    74→
+    75→const NAV_LINKS = [
+    76→  { label: "Features", id: "features" },
+    77→  { label: "Showcase", id: "showcase" },
+    78→  { label: "Pricing", id: "pricing" },
+    79→  { label: "FAQ", id: "faq" },
+    80→];
+    81→
+    82→const COMPANIES = [
+    83→  "NorthPeak",
+    84→  "Lumenly",
+    85→  "Vantaco",
+    86→  "Polaris",
+    87→  "Nimbus",
+    88→  "Cobalt",
+    89→  "Quanta",
+    90→  "Helio",
+    91→  "Brightly",
+    92→  "Vault",
+    93→];
+    94→
+    95→type Feature = {
+    96→  icon: typeof Globe;
+    97→  title: string;
+    98→  desc: string;
+    99→  span: string;
+   100→};
+   101→
+   102→const FEATURES: Feature[] = [
+   103→  {
+   104→    icon: Globe,
+   105→    title: "Real site crawls",
+   106→    desc: "A depth-first crawler walks every internal link, parses your DOM with cheerio, and surfaces broken links, missing meta, alt text gaps, and duplicate titles — all in seconds.",
+   107→    span: "lg:col-span-2 lg:row-span-2",
+   108→  },
+   109→  {
+   110→    icon: PenLine,
+   111→    title: "AI content generation",
+   112→    desc: "Generate title tags, meta descriptions, and full H1-led articles tuned to your target keyword.",
+   113→    span: "lg:col-span-2",
+   114→  },
+   115→  {
+   116→    icon: TrendingUp,
+   117→    title: "Keyword rank tracking",
+   118→    desc: "Daily position tracking with 14-day history sparklines and delta indicators.",
+   119→    span: "",
+   120→  },
+   121→  {
+   122→    icon: FileText,
+   123→    title: "Automated reports",
+   124→    desc: "One-click branded HTML reports ready to ship to clients.",
+   125→    span: "",
+   126→  },
+   127→  {
+   128→    icon: Gauge,
+   129→    title: "Health scoring",
+   130→    desc: "A weighted 0–100 score turns every audit into a single shareable number.",
+   131→    span: "",
+   132→  },
+   133→  {
+   134→    icon: CalendarClock,
+   135→    title: "Scheduled audits",
+   136→    desc: "Weekly automated crawls keep your site honest without lifting a finger.",
+   137→    span: "lg:col-span-2",
+   138→  },
+   139→];
+   140→
+   141→type Tab = {
+   142→  value: string;
+   143→  label: string;
+   144→  icon: typeof Bug;
+   145→  title: string;
+   146→  desc: string;
+   147→  bullets: string[];
+   148→};
+   149→
+   150→const SHOWCASE_TABS: Tab[] = [
+   151→  {
+   152→    value: "audit",
+   153→    label: "Audit",
+   154→    icon: Bug,
+   155→    title: "Surface every issue in a single crawl",
+   156→    desc: "Every page is scored against 14 on-page SEO checks. Severity badges, deep links, and an AI-generated remediation plan make triage painless.",
+   157→    bullets: [
+   158→      "14 on-page SEO checks per page",
+   159→      "Critical / warning / info severity tags",
+   160→      "AI-prioritized remediation plan",
+   161→    ],
+   162→  },
+   163→  {
+   164→    value: "content",
+   165→    label: "Content Studio",
+   166→    icon: PenLine,
+   167→    title: "Generate SEO content that actually ranks",
+   168→    desc: "Title tags, meta descriptions, and full structured articles — all from a single keyword. Improve existing content with one click.",
+   169→    bullets: [
+   170→      "Title tags under 60 chars, meta under 155",
+   171→      "H1-led markdown with subheadings + bullets",
+   172→      "One-click improve existing content",
+   173→    ],
+   174→  },
+   175→  {
+   176→    value: "rankings",
+   177→    label: "Rankings",
+   178→    icon: BarChart3,
+   179→    title: "Track positions day by day",
+   180→    desc: "Daily rank tracking with multi-keyword trend lines and per-keyword sparklines. Watch your positions climb.",
+   181→    bullets: [
+   182→      "Daily position updates",
+   183→      "Multi-keyword trend overlay",
+   184→      "Per-keyword 14-day sparklines",
+   185→    ],
+   186→  },
+   187→  {
+   188→    value: "reports",
+   189→    label: "Reports",
+   190→    icon: FileText,
+   191→    title: "Ship branded reports in one click",
+   192→    desc: "Generate a complete, client-ready HTML report covering audits, rankings, and AI recommendations — downloadable in seconds.",
+   193→    bullets: [
+   194→      "Full HTML report with charts",
+   195→      "Top issues + keyword rankings included",
+   196→      "Download or email to clients",
+   197→    ],
+   198→  },
+   199→];
+   200→
+   201→const STEPS = [
+   202→  {
+   203→    n: "01",
+   204→    icon: Globe,
+   205→    title: "Add your site",
+   206→    desc: "Drop in a URL. SEOScout immediately walks your domain, parses every page, and builds a complete inventory.",
+   207→  },
+   208→  {
+   209→    n: "02",
+   210→    icon: ScanSearch,
+   211→    title: "Run an audit",
+   212→    desc: "14 on-page checks run per page. AI analyzes the issue list and returns a prioritized remediation plan.",
+   213→  },
+   214→  {
+   215→    n: "03",
+   216→    icon: TrendingUp,
+   217→    title: "Track & ship reports",
+   218→    desc: "Track keyword positions daily, generate AI content, and ship branded reports to your clients in one click.",
+   219→  },
+   220→];
+   221→
+   222→const LIVE_STATS = [
+   223→  { value: 4_200_000, label: "Pages crawled", format: (n: number) => `${(n / 1_000_000).toFixed(1)}M` },
+   224→  { value: 187_000, label: "Issues resolved", format: (n: number) => `${Math.round(n / 1000)}K` },
+   225→  { value: 99.98, label: "Uptime", format: (n: number) => `${n.toFixed(2)}%` },
+   226→  { value: 14, label: "Day free trial", format: (n: number) => `${Math.round(n)} days` },
+   227→];
+   228→
+   229→type Testimonial = {
+   230→  quote: string;
+   231→  name: string;
+   232→  role: string;
+   233→  initials: string;
+   234→};
+   235→
+   236→const TESTIMONIALS: Testimonial[] = [
+   237→  {
+   238→    quote:
+   239→      "SEOScout replaced three tools in our stack. The crawler alone catches issues our previous provider missed for months — and the AI recommendations are genuinely useful.",
+   240→    name: "Maya Chen",
+   241→    role: "Head of Growth, NorthPeak",
+   242→    initials: "MC",
+   243→  },
+   244→  {
+   245→    quote:
+   246→      "Our team went from spending a full day per client audit to under 20 minutes. The branded reports look polished enough to send straight to enterprise clients.",
+   247→    name: "Daniel Vargas",
+   248→    role: "SEO Lead, Lumenly",
+   249→    initials: "DV",
+   250→  },
+   251→  {
+   252→    quote:
+   253→      "The Content Studio is the real deal. We generate title tags and meta descriptions in bulk, and the AI content actually ranks. ROI in the first month.",
+   254→    name: "Priya Anand",
+   255→    role: "Founder, Cobalt Agency",
+   256→    initials: "PA",
+   257→  },
+   258→];
+   259→
+   260→type Plan = {
+   261→  name: string;
+   262→  price: number;
+   263→  tagline: string;
+   264→  features: string[];
+   265→  cta: string;
+   266→  popular?: boolean;
+   267→};
+   268→
+   269→const PRICING: Plan[] = [
+   270→  {
+   271→    name: "Starter",
+   272→    price: 29,
+   273→    tagline: "For solo founders & side projects",
+   274→    features: [
+   275→      "3 sites",
+   276→      "Weekly automated audits",
+   277→      "50 AI content generations / mo",
+   278→      "25 tracked keywords",
+   279→      "Email support",
+   280→    ],
+   281→    cta: "Start free",
+   282→  },
+   283→  {
+   284→    name: "Pro",
+   285→    price: 99,
+   286→    tagline: "For growing marketing teams",
+   287→    features: [
+   288→      "15 sites",
+   289→      "Daily automated audits",
+   290→      "Unlimited AI content generation",
+   291→      "250 tracked keywords",
+   292→      "Branded client reports",
+   293→      "Priority support",
+   294→    ],
+   295→    cta: "Start free",
+   296→    popular: true,
+   297→  },
+   298→  {
+   299→    name: "Business",
+   300→    price: 299,
+   301→    tagline: "For agencies & enterprises",
+   302→    features: [
+   303→      "Unlimited sites",
+   304→      "Hourly audit refreshes",
+   305→      "Dedicated AI compute",
+   306→      "Unlimited keywords",
+   307→      "White-label reports",
+   308→      "SSO + audit log",
+   309→    ],
+   310→    cta: "Start free",
+   311→  },
+   312→];
+   313→
+   314→const FAQS = [
+   315→  {
+   316→    q: "How does the SEO crawler work?",
+   317→    a: "SEOScout runs a real BFS web crawl starting from your root URL. It follows same-origin links (respecting robots.txt), parses each page with cheerio, and runs 14 on-page checks — broken links, missing meta, alt text, H1 issues, mobile viewport, slow loads, and more. A weighted 0–100 health score is computed from the issue list.",
+   318→  },
+   319→  {
+   320→    q: "Is the AI content generation included in every plan?",
+   321→    a: "Yes. Every plan includes AI content generation powered by our in-house LLM. Starter includes 50 generations per month; Pro and above include unlimited. You can generate title tags, meta descriptions, full H1-led articles, and improve existing content with a single click.",
+   322→  },
+   323→  {
+   324→    q: "Where do keyword rankings come from?",
+   325→    a: "Out of the box, SEOScout uses a deterministic rank simulation with daily drift and 14-day historical seeding — perfect for demos and small teams. For production, plug in your Google Search Console or SEMrush API key in Settings and SEOScout will pull real, live positions automatically.",
+   326→  },
+   327→  {
+   328→    q: "Can I white-label reports for clients?",
+   329→    a: "Yes — Pro and Business plans include branded HTML reports. Business plans add full white-labeling (custom logo, colors, and sender domain) plus the ability to email reports directly to clients on a schedule.",
+   330→  },
+   331→  {
+   332→    q: "Do you offer a free trial?",
+   333→    a: "Every plan starts with a 14-day free trial. No credit card required. You can cancel any time inside the dashboard; we will never auto-charge you after the trial ends.",
+   334→  },
+   335→  {
+   336→    q: "Can I self-host or export my data?",
+   337→    a: "Your sites, audits, keywords, content, and reports are always exportable in JSON or CSV. SEOScout is a hosted SaaS — self-hosting is not currently offered, but you own your data and can take it with you at any time.",
+   338→  },
+   339→];
+   340→
+   341→const FOOTER_LINKS = [
+   342→  {
+   343→    title: "Product",
+   344→    links: ["Features", "Showcase", "Pricing", "Changelog", "Roadmap"],
+   345→  },
+   346→  {
+   347→    title: "Resources",
+   348→    links: ["Documentation", "SEO Guide", "API Reference", "Status", "Blog"],
+   349→  },
+   350→  {
+   351→    title: "Company",
+   352→    links: ["About", "Careers", "Customers", "Contact", "Press kit"],
+   353→  },
+   354→  {
+   355→    title: "Legal",
+   356→    links: ["Privacy", "Terms", "Security", "DPA", "Sub-processors"],
+   357→  },
+   358→];
+   359→
+   360→/* ------------------------------------------------------------------ */
+   361→/* Helpers                                                            */
+   362→/* ------------------------------------------------------------------ */
+   363→
+   364→function scrollToId(id: string) {
+   365→  if (typeof document === "undefined") return;
+   366→  const el = document.getElementById(id);
+   367→  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+   368→}
+   369→
+   370→/* ------------------------------------------------------------------ */
+   371→/* Top navigation                                                     */
+   372→/* ------------------------------------------------------------------ */
+   373→
+   374→function Nav({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void }) {
+   375→  const [shrunk, setShrunk] = useState(false);
+   376→  const [open, setOpen] = useState(false);
+   377→  const { scrollY } = useScroll();
+   378→  useMotionValueEvent(scrollY, "change", (v) => setShrunk(v > 24));
+   379→
+   380→  return (
+   381→    <motion.header
+   382→      initial={{ y: -40, opacity: 0 }}
+   383→      animate={{ y: 0, opacity: 1 }}
+   384→      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+   385→      className="fixed inset-x-0 top-0 z-50 flex justify-center px-3 sm:px-4"
+   386→    >
+   387→      <div
+   388→        className={cn(
+   389→          "mt-3 flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl px-3 transition-all duration-300 sm:px-4",
+   390→          shrunk ? "h-14 glass-panel glow-soft" : "h-16 bg-transparent"
+   391→        )}
+   392→      >
+   393→        {/* Brand */}
+   394→        <button
+   395→          onClick={() => scrollToId("top")}
+   396→          className="flex items-center gap-2.5"
+   397→          aria-label="SEOScout home"
+   398→        >
+   399→          <span className="grid size-8 place-items-center rounded-lg brand-gradient glow-primary">
+   400→            <Search className="size-4 text-white" />
+   401→          </span>
+   402→          <span className="text-base font-semibold tracking-tight">SEOScout</span>
+   403→        </button>
+   404→
+   405→        {/* Center nav */}
+   406→        <nav className="hidden items-center gap-1 md:flex">
+   407→          {NAV_LINKS.map((l) => (
+   408→            <button
+   409→              key={l.id}
+   410→              onClick={() => scrollToId(l.id)}
+   411→              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+   412→            >
+   413→              {l.label}
+   414→            </button>
+   415→          ))}
+   416→        </nav>
+   417→
+   418→        {/* Right actions */}
+   419→        <div className="hidden items-center gap-2 md:flex">
+   420→          <Button variant="ghost" size="sm" onClick={onSignIn}>
+   421→            Sign in
+   422→          </Button>
+   423→          <MagneticButton
+   424→            as="button"
+   425→            onClick={onStart}
+   426→            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+   427→          >
+   428→            Start free
+   429→            <ArrowRight className="size-3.5" />
+   430→          </MagneticButton>
+   431→        </div>
+   432→
+   433→        {/* Mobile toggle */}
+   434→        <button
+   435→          className="grid size-9 place-items-center rounded-lg glass-panel md:hidden"
+   436→          onClick={() => setOpen((o) => !o)}
+   437→          aria-label="Toggle menu"
+   438→        >
+   439→          {open ? <X className="size-4" /> : <Menu className="size-4" />}
+   440→        </button>
+   441→      </div>
+   442→
+   443→      {/* Mobile dropdown */}
+   444→      <AnimatePresence>
+   445→        {open && (
+   446→          <motion.div
+   447→            initial={{ opacity: 0, y: -8, height: 0 }}
+   448→            animate={{ opacity: 1, y: 0, height: "auto" }}
+   449→            exit={{ opacity: 0, y: -8, height: 0 }}
+   450→            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+   451→            className="absolute inset-x-3 top-20 overflow-hidden rounded-2xl glass-panel p-2 md:hidden"
+   452→          >
+   453→            {NAV_LINKS.map((l) => (
+   454→              <button
+   455→                key={l.id}
+   456→                onClick={() => {
+   457→                  scrollToId(l.id);
+   458→                  setOpen(false);
+   459→                }}
+   460→                className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+   461→              >
+   462→                {l.label}
+   463→              </button>
+   464→            ))}
+   465→            <div className="mt-1 flex gap-2 border-t border-border/60 pt-2">
+   466→              <Button variant="ghost" size="sm" className="flex-1" onClick={onSignIn}>
+   467→                Sign in
+   468→              </Button>
+   469→              <Button
+   470→                size="sm"
+   471→                className="flex-1 glow-primary"
+   472→                onClick={() => {
+   473→                  onStart();
+   474→                  setOpen(false);
+   475→                }}
+   476→              >
+   477→                Start free
+   478→              </Button>
+   479→            </div>
+   480→          </motion.div>
+   481→        )}
+   482→      </AnimatePresence>
+   483→    </motion.header>
+   484→  );
+   485→}
+   486→
+   487→/* ------------------------------------------------------------------ */
+   488→/* Hero dashboard preview (floating mockup)                           */
+   489→/* ------------------------------------------------------------------ */
+   490→
+   491→function ScoreRing({ score = 87 }: { score?: number }) {
+   492→  const r = 28;
+   493→  const c = 2 * Math.PI * r;
+   494→  const offset = c * (1 - score / 100);
+   495→  return (
+   496→    <svg viewBox="0 0 80 80" className="size-20">
+   497→      <circle cx="40" cy="40" r={r} fill="none" stroke="currentColor" strokeWidth="6" className="text-border" />
+   498→      <motion.circle
+   499→        cx="40"
+   500→        cy="40"
+   501→        r={r}
+   502→        fill="none"
+   503→        stroke="url(#scoreGrad)"
+   504→        strokeWidth="6"
+   505→        strokeLinecap="round"
+   506→        strokeDasharray={c}
+   507→        initial={{ strokeDashoffset: c }}
+   508→        animate={{ strokeDashoffset: offset }}
+   509→        transition={{ duration: 1.6, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+   510→        transform="rotate(-90 40 40)"
+   511→      />
+   512→      <defs>
+   513→        <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
+   514→          <stop offset="0%" stopColor="oklch(0.62 0.2 258)" />
+   515→          <stop offset="100%" stopColor="oklch(0.5 0.18 196)" />
+   516→        </linearGradient>
+   517→      </defs>
+   518→      <text x="40" y="44" textAnchor="middle" className="fill-foreground text-[15px] font-semibold">
+   519→        {score}
+   520→      </text>
+   521→    </svg>
+   522→  );
+   523→}
+   524→
+   525→function HeroPreview() {
+   526→  const ref = useRef<HTMLDivElement>(null);
+   527→  const inView = useInView(ref, { once: true, margin: "-40px" });
+   528→
+   529→  return (
+   530→    <div ref={ref} className="relative">
+   531→      {/* soft glow under */}
+   532→      <div
+   533→        aria-hidden
+   534→        className="absolute -inset-x-10 -bottom-10 top-10 -z-10 rounded-[2rem] opacity-60 blur-3xl"
+   535→        style={{
+   536→          background:
+   537→            "radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--primary) 50%, transparent), transparent 70%)",
+   538→        }}
+   539→      />
+   540→
+   541→      <TiltCard max={6} className="rounded-2xl">
+   542→        <div className="overflow-hidden rounded-2xl glass-panel glow-soft">
+   543→          {/* top bar */}
+   544→          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
+   545→            <span className="size-2.5 rounded-full bg-chart-5/70" />
+   546→            <span className="size-2.5 rounded-full bg-chart-4/70" />
+   547→            <span className="size-2.5 rounded-full bg-chart-3/70" />
+   548→            <div className="ml-3 flex items-center gap-2 text-xs text-muted-foreground">
+   549→              <Globe className="size-3" />
+   550→              app.seoscout.io/overview
+   551→            </div>
+   552→          </div>
+   553→
+   554→          <div className="flex">
+   555→            {/* sidebar */}
+   556→            <aside className="hidden w-36 flex-col gap-1 border-r border-border/60 p-3 sm:flex">
+   557→              {[
+   558→                { icon: Gauge, label: "Overview", active: true },
+   559→                { icon: Bug, label: "Audits" },
+   560→                { icon: PenLine, label: "Content" },
+   561→                { icon: TrendingUp, label: "Keywords" },
+   562→                { icon: FileText, label: "Reports" },
+   563→              ].map((it, i) => (
+   564→                <motion.div
+   565→                  key={it.label}
+   566→                  initial={{ opacity: 0, x: -8 }}
+   567→                  animate={inView ? { opacity: 1, x: 0 } : {}}
+   568→                  transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
+   569→                  className={cn(
+   570→                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs",
+   571→                    it.active ? "bg-primary/10 text-primary" : "text-muted-foreground"
+   572→                  )}
+   573→                >
+   574→                  <it.icon className="size-3.5" />
+   575→                  {it.label}
+   576→                </motion.div>
+   577→              ))}
+   578→            </aside>
+   579→
+   580→            {/* main */}
+   581→            <div className="flex-1 p-4">
+   582→              <div className="flex items-center justify-between">
+   583→                <div>
+   584→                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+   585→                    Site health
+   586→                  </div>
+   587→                  <div className="text-sm font-medium">example.com</div>
+   588→                </div>
+   589→                <ScoreRing score={87} />
+   590→              </div>
+   591→
+   592→              {/* stat cards */}
+   593→              <div className="mt-4 grid grid-cols-3 gap-2">
+   594→                {[
+   595→                  { label: "Pages", value: "248", color: "text-chart-2" },
+   596→                  { label: "Issues", value: "12", color: "text-chart-5" },
+   597→                  { label: "Keywords", value: "86", color: "text-chart-3" },
+   598→                ].map((s, i) => (
+   599→                  <motion.div
+   600→                    key={s.label}
+   601→                    initial={{ opacity: 0, y: 10 }}
+   602→                    animate={inView ? { opacity: 1, y: 0 } : {}}
+   603→                    transition={{ delay: 0.5 + i * 0.1, duration: 0.4 }}
+   604→                    className="rounded-lg border border-border/60 bg-background/40 p-2.5"
+   605→                  >
+   606→                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+   607→                      {s.label}
+   608→                    </div>
+   609→                    <div className={cn("text-base font-semibold", s.color)}>{s.value}</div>
+   610→                  </motion.div>
+   611→                ))}
+   612→              </div>
+   613→
+   614→              {/* area chart */}
+   615→              <div className="mt-3 rounded-lg border border-border/60 bg-background/40 p-3">
+   616→                <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+   617→                  <span>Ranking trend</span>
+   618→                  <span className="text-chart-3">+14 this week</span>
+   619→                </div>
+   620→                <svg viewBox="0 0 320 90" className="h-20 w-full" preserveAspectRatio="none">
+   621→                  <defs>
+   622→                    <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+   623→                      <stop offset="0%" stopColor="oklch(0.55 0.2 220)" stopOpacity="0.35" />
+   624→                      <stop offset="100%" stopColor="oklch(0.55 0.2 220)" stopOpacity="0" />
+   625→                    </linearGradient>
+   626→                  </defs>
+   627→                  <motion.path
+   628→                    d="M0 70 L40 64 L80 58 L120 60 L160 48 L200 42 L240 32 L280 28 L320 18 L320 90 L0 90 Z"
+   629→                    fill="url(#areaFill)"
+   630→                    initial={{ opacity: 0 }}
+   631→                    animate={inView ? { opacity: 1 } : {}}
+   632→                    transition={{ duration: 0.8, delay: 0.9 }}
+   633→                  />
+   634→                  <motion.path
+   635→                    d="M0 70 L40 64 L80 58 L120 60 L160 48 L200 42 L240 32 L280 28 L320 18"
+   636→                    fill="none"
+   637→                    stroke="oklch(0.55 0.2 220)"
+   638→                    strokeWidth="2"
+   639→                    strokeLinecap="round"
+   640→                    initial={{ pathLength: 0 }}
+   641→                    animate={inView ? { pathLength: 1 } : {}}
+   642→                    transition={{ duration: 1.4, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+   643→                  />
+   644→                  <motion.circle
+   645→                    cx="320"
+   646→                    cy="18"
+   647→                    r="3"
+   648→                    fill="oklch(0.5 0.18 196)"
+   649→                    initial={{ scale: 0 }}
+   650→                    animate={inView ? { scale: 1 } : {}}
+   651→                    transition={{ delay: 1.9, type: "spring", stiffness: 300 }}
+   652→                  />
+   653→                </svg>
+   654→              </div>
+   655→            </div>
+   656→          </div>
+   657→        </div>
+   658→      </TiltCard>
+   659→
+   660→      {/* floating toast badges */}
+   661→      <motion.div
+   662→        initial={{ opacity: 0, x: -20, y: 10 }}
+   663→        animate={{ opacity: 1, x: 0, y: 0 }}
+   664→        transition={{ delay: 1.4, duration: 0.5 }}
+   665→        className="animate-float absolute -left-4 top-24 hidden rounded-xl glass-panel glow-soft px-3 py-2 sm:flex md:-left-10"
+   666→      >
+   667→        <div className="flex items-center gap-2">
+   668→          <span className="grid size-7 place-items-center rounded-lg bg-chart-5/15 text-chart-5">
+   669→            <Bug className="size-3.5" />
+   670→          </span>
+   671→          <div>
+   672→            <div className="text-xs font-medium">Issue detected</div>
+   673→            <div className="text-[10px] text-muted-foreground">Missing meta description</div>
+   674→          </div>
+   675→        </div>
+   676→      </motion.div>
+   677→
+   678→      <motion.div
+   679→        initial={{ opacity: 0, x: 20, y: -10 }}
+   680→        animate={{ opacity: 1, x: 0, y: 0 }}
+   681→        transition={{ delay: 1.7, duration: 0.5 }}
+   682→        className="animate-float-slow absolute -right-4 bottom-16 hidden rounded-xl glass-panel glow-soft px-3 py-2 sm:flex md:-right-10"
+   683→      >
+   684→        <div className="flex items-center gap-2">
+   685→          <span className="grid size-7 place-items-center rounded-lg bg-chart-3/15 text-chart-3">
+   686→            <Check className="size-3.5" />
+   687→          </span>
+   688→          <div>
+   689→            <div className="text-xs font-medium">Content ready</div>
+   690→            <div className="text-[10px] text-muted-foreground">AI article generated</div>
+   691→          </div>
+   692→        </div>
+   693→      </motion.div>
+   694→    </div>
+   695→  );
+   696→}
+   697→
+   698→/* ------------------------------------------------------------------ */
+   699→/* Hero                                                               */
+   700→/* ------------------------------------------------------------------ */
+   701→
+   702→function Hero({ onStart }: { onStart: () => void }) {
+   703→  return (
+   704→    <section id="top" className="relative min-h-screen overflow-hidden pt-28 sm:pt-32">
+   705→      {/* particle field behind everything */}
+   706→      <div className="absolute inset-0 -z-0">
+   707→        <ParticleField density={70} />
+   708→      </div>
+   709→
+   710→      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-24 lg:grid-cols-2 lg:gap-8">
+   711→        {/* Left: copy */}
+   712→        <div className="relative z-10 flex flex-col items-start">
+   713→          <motion.div
+   714→            initial={{ opacity: 0, y: 10 }}
+   715→            animate={{ opacity: 1, y: 0 }}
+   716→            transition={{ duration: 0.5 }}
+   717→            className="mb-6 inline-flex items-center gap-2 rounded-full glass-panel px-3 py-1 text-xs text-muted-foreground"
+   718→          >
+   719→            <span className="relative flex size-2">
+   720→              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+   721→              <span className="relative inline-flex size-2 rounded-full brand-gradient" />
+   722→            </span>
+   723→            ✨ AI-Powered SEO Automation
+   724→          </motion.div>
+   725→
+   726→          <WordReveal
+   727→            as="h1"
+   728→            text="Automate your SEO."
+   729→            className="text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl"
+   730→            stagger={0.06}
+   731→          />
+   732→          <WordReveal
+   733→            as="h1"
+   734→            text="Rank higher, faster."
+   735→            className="mt-2 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl"
+   736→            delay={0.2}
+   737→            stagger={0.06}
+   738→          />
+   739→          <span className="sr-only">Automate your SEO. Rank higher, faster.</span>
+   740→          {/* gradient version overlay (visible) */}
+   741→          <span
+   742→            aria-hidden
+   743→            className="mt-2 block text-4xl font-semibold leading-[1.05] tracking-tight brand-gradient-text gradient-pan sm:text-5xl lg:text-6xl xl:text-7xl"
+   744→          >
+   745→            Rank higher, faster.
+   746→          </span>
+   747→
+   748→          <Reveal delay={0.5} className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+   749→            SEOScout crawls your site, runs 14 on-page SEO checks, generates AI-tuned content,
+   750→            tracks keyword positions daily, and ships branded reports — all from one fast,
+   751→            beautiful dashboard.
+   752→          </Reveal>
+   753→
+   754→          <Reveal delay={0.65} className="mt-8 flex flex-col gap-3 sm:flex-row">
+   755→            <MagneticButton
+   756→              as="button"
+   757→              onClick={onStart}
+   758→              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+   759→            >
+   760→              Start free
+   761→              <ArrowRight className="size-4" />
+   762→            </MagneticButton>
+   763→            <Button
+   764→              variant="ghost"
+   765→              size="lg"
+   766→              onClick={() => scrollToId("showcase")}
+   767→              className="h-11 rounded-xl border border-border/60 glass-panel"
+   768→            >
+   769→              Watch demo
+   770→            </Button>
+   771→          </Reveal>
+   772→
+   773→          {/* trust stats */}
+   774→          <Reveal delay={0.8} className="mt-10 grid w-full max-w-md grid-cols-3 gap-4">
+   775→            {[
+   776→              { v: 4200000, label: "Pages crawled", f: (n: number) => `${(n / 1_000_000).toFixed(1)}M` },
+   777→              { v: 187000, label: "Issues fixed", f: (n: number) => `${Math.round(n / 1000)}K` },
+   778→              { v: 99.98, label: "Uptime", f: (n: number) => `${n.toFixed(2)}%` },
+   779→            ].map((s) => (
+   780→              <div key={s.label}>
+   781→                <div className="text-2xl font-semibold text-glow sm:text-3xl">
+   782→                  <AnimatedCounter value={s.v} format={s.f} />
+   783→                </div>
+   784→                <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
+   785→              </div>
+   786→            ))}
+   787→          </Reveal>
+   788→        </div>
+   789→
+   790→        {/* Right: floating preview */}
+   791→        <Parallax offset={28} className="relative z-10">
+   792→          <div className="animate-float-slow">
+   793→            <HeroPreview />
+   794→          </div>
+   795→        </Parallax>
+   796→      </div>
+   797→
+   798→      {/* scroll-down indicator */}
+   799→      <motion.button
+   800→        onClick={() => scrollToId("features")}
+   801→        initial={{ opacity: 0 }}
+   802→        animate={{ opacity: 1 }}
+   803→        transition={{ delay: 1.6 }}
+   804→        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-1 text-muted-foreground sm:flex"
+   805→        aria-label="Scroll to features"
+   806→      >
+   807→        <span className="text-[10px] uppercase tracking-widest">Scroll</span>
+   808→        <motion.span
+   809→          animate={{ y: [0, 6, 0] }}
+   810→          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+   811→        >
+   812→          <ChevronDown className="size-4" />
+   813→        </motion.span>
+   814→      </motion.button>
+   815→    </section>
+   816→  );
+   817→}
+   818→
+   819→/* ------------------------------------------------------------------ */
+   820→/* Trusted-by marquee                                                 */
+   821→/* ------------------------------------------------------------------ */
+   822→
+   823→function TrustedBy() {
+   824→  return (
+   825→    <section className="mx-auto max-w-6xl px-4 py-16">
+   826→      <Reveal className="mb-6 text-center text-xs uppercase tracking-widest text-muted-foreground">
+   827→        Trusted by modern marketing teams
+   828→      </Reveal>
+   829→      <Reveal delay={0.1}>
+   830→        <Marquee>
+   831→          {COMPANIES.map((c) => (
+   832→            <span
+   833→              key={c}
+   834→              className="font-mono text-lg font-semibold text-muted-foreground/70 transition-colors hover:text-foreground"
+   835→            >
+   836→              {c}
+   837→            </span>
+   838→          ))}
+   839→        </Marquee>
+   840→      </Reveal>
+   841→    </section>
+   842→  );
+   843→}
+   844→
+   845→/* ------------------------------------------------------------------ */
+   846→/* Features bento                                                     */
+   847→/* ------------------------------------------------------------------ */
+   848→
+   849→function BarChartMini() {
+   850→  const bars = [
+   851→    { h: 28, color: "oklch(0.62 0.2 258)" },
+   852→    { h: 44, color: "oklch(0.55 0.2 220)" },
+   853→    { h: 36, color: "oklch(0.55 0.2 220)" },
+   854→    { h: 60, color: "oklch(0.5 0.18 196)" },
+   855→    { h: 72, color: "oklch(0.5 0.18 196)" },
+   856→    { h: 52, color: "oklch(0.55 0.2 220)" },
+   857→    { h: 84, color: "oklch(0.62 0.2 258)" },
+   858→    { h: 68, color: "oklch(0.5 0.18 196)" },
+   859→  ];
+   860→  return (
+   861→    <svg viewBox="0 0 240 110" className="h-32 w-full">
+   862→      {bars.map((b, i) => {
+   863→        const x = 10 + i * 28;
+   864→        const targetH = b.h;
+   865→        const y = 100 - targetH;
+   866→        return (
+   867→          <motion.rect
+   868→            key={i}
+   869→            x={x}
+   870→            width={18}
+   871→            rx={3}
+   872→            fill={b.color}
+   873→            initial={{ height: 0, y: 100 }}
+   874→            whileInView={{ height: targetH, y }}
+   875→            viewport={{ once: true, margin: "-40px" }}
+   876→            transition={{
+   877→              duration: 0.7,
+   878→              delay: i * 0.08,
+   879→              ease: [0.16, 1, 0.3, 1],
+   880→            }}
+   881→          />
+   882→        );
+   883→      })}
+   884→      <line x1="0" y1="100" x2="240" y2="100" stroke="currentColor" strokeWidth="1" className="text-border" />
+   885→    </svg>
+   886→  );
+   887→}
+   888→
+   889→function ScanningCard() {
+   890→  return (
+   891→    <div className="relative h-32 overflow-hidden rounded-lg border border-border/60 bg-background/40">
+   892→      <div className="absolute inset-0 grid-bg opacity-40" />
+   893→      {/* scan line */}
+   894→      <motion.div
+   895→        initial={{ x: "-100%" }}
+   896→        whileInView={{ x: "100%" }}
+   897→        viewport={{ once: true }}
+   898→        transition={{ duration: 2.2, ease: "easeInOut", delay: 0.3 }}
+   899→        className="absolute inset-y-0 w-1/3"
+   900→        style={{
+   901→          background:
+   902→            "linear-gradient(90deg, transparent, color-mix(in oklch, var(--primary) 35%, transparent), transparent)",
+   903→        }}
+   904→      />
+   905→      <div className="relative flex h-full flex-col justify-center gap-2 px-4">
+   906→        {[80, 60, 70].map((w, i) => (
+   907→          <motion.div
+   908→            key={i}
+   909→            initial={{ opacity: 0.3 }}
+   910→            whileInView={{ opacity: 1 }}
+   911→            viewport={{ once: true }}
+   912→            transition={{ delay: 0.4 + i * 0.2 }}
+   913→            className="h-2 rounded-full bg-foreground/15"
+   914→            style={{ width: `${w}%` }}
+   915→          />
+   916→        ))}
+   917→      </div>
+   918→    </div>
+   919→  );
+   920→}
+   921→
+   922→function FeatureCard({ f }: { f: Feature }) {
+   923→  return (
+   924→    <motion.div variants={staggerItem} className={cn("min-h-[160px]", f.span)}>
+   925→      <TiltCard max={5} className="h-full rounded-xl">
+   926→        <GlowCard className="flex h-full flex-col p-5">
+   927→          <div className="mb-3 flex items-center gap-3">
+   928→            <span className="grid size-9 place-items-center rounded-lg brand-gradient glow-primary">
+   929→              <f.icon className="size-4 text-white" />
+   930→            </span>
+   931→            <h3 className="text-base font-semibold">{f.title}</h3>
+   932→          </div>
+   933→          <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+   934→
+   935→          {f.title === "Real site crawls" && (
+   936→            <div className="mt-4">
+   937→              <BarChartMini />
+   938→            </div>
+   939→          )}
+   940→          {f.title === "AI content generation" && <ScanningCard />}
+   941→          {f.title === "Scheduled audits" && (
+   942→            <div className="mt-4 flex items-center gap-1.5">
+   943→              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+   944→                <div key={i} className="flex flex-1 flex-col items-center gap-1">
+   945→                  <div
+   946→                    className={cn(
+   947→                      "h-8 w-full rounded-md",
+   948→                      i === 2 ? "brand-gradient glow-primary" : "bg-foreground/8"
+   949→                    )}
+   950→                  />
+   951→                  <span className="text-[9px] text-muted-foreground">{d}</span>
+   952→                </div>
+   953→              ))}
+   954→            </div>
+   955→          )}
+   956→        </GlowCard>
+   957→      </TiltCard>
+   958→    </motion.div>
+   959→  );
+   960→}
+   961→
+   962→function Features() {
+   963→  return (
+   964→    <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
+   965→      <div className="mx-auto max-w-2xl text-center">
+   966→        <Reveal>
+   967→          <Badge variant="outline" className="mb-4 glass-panel">
+   968→            Features
+   969→          </Badge>
+   970→        </Reveal>
+   971→        <WordReveal
+   972→          text="Everything you need to win search"
+   973→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+   974→          stagger={0.05}
+   975→        />
+   976→        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+   977→          A complete SEO toolkit — crawl, audit, generate, track, and report — unified in one
+   978→          fast, beautiful workspace.
+   979→        </Reveal>
+   980→      </div>
+   981→
+   982→      <motion.div
+   983→        variants={staggerContainer}
+   984→        initial="hidden"
+   985→        whileInView="show"
+   986→        viewport={{ once: true, margin: "-80px" }}
+   987→        className="mt-12 grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   988→      >
+   989→        {FEATURES.map((f) => (
+   990→          <FeatureCard key={f.title} f={f} />
+   991→        ))}
+   992→      </motion.div>
+   993→    </section>
+   994→  );
+   995→}
+   996→
+   997→/* ------------------------------------------------------------------ */
+   998→/* Showcase — tabbed product tour                                     */
+   999→/* ------------------------------------------------------------------ */
+  1000→
+  1001→function AuditDemo() {
+  1002→  const issues = [
+  1003→    { sev: "Critical", label: "Broken link on /pricing", color: "bg-chart-5/15 text-chart-5" },
+  1004→    { sev: "Warning", label: "Missing meta description", color: "bg-chart-4/15 text-chart-4" },
+  1005→    { sev: "Warning", label: "Image missing alt text", color: "bg-chart-4/15 text-chart-4" },
+  1006→    { sev: "Info", label: "Duplicate title tag", color: "bg-chart-2/15 text-chart-2" },
+  1007→  ];
+  1008→  return (
+  1009→    <div className="grid gap-4 md:grid-cols-[auto_1fr]">
+  1010→      <div className="rounded-xl border border-border/60 bg-background/40 p-4">
+  1011→        <ScoreRing score={72} />
+  1012→        <div className="mt-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
+  1013→          Health
+  1014→        </div>
+  1015→      </div>
+  1016→      <div className="space-y-2">
+  1017→        {issues.map((it, i) => (
+  1018→          <motion.div
+  1019→            key={it.label}
+  1020→            initial={{ opacity: 0, x: 16 }}
+  1021→            animate={{ opacity: 1, x: 0 }}
+  1022→            transition={{ delay: 0.2 + i * 0.12, duration: 0.4 }}
+  1023→            className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-3 py-2.5"
+  1024→          >
+  1025→            <div className="flex items-center gap-3">
+  1026→              <Bug className="size-3.5 text-muted-foreground" />
+  1027→              <span className="text-sm">{it.label}</span>
+  1028→            </div>
+  1029→            <span className={cn("rounded-md px-2 py-0.5 text-[10px] font-medium", it.color)}>
+  1030→              {it.sev}
+  1031→            </span>
+  1032→          </motion.div>
+  1033→        ))}
+  1034→      </div>
+  1035→    </div>
+  1036→  );
+  1037→}
+  1038→
+  1039→function ContentDemo() {
+  1040→  const lines = [
+  1041→    "## How to Choose the Right Running Shoes",
+  1042→    "",
+  1043→    "Finding the perfect pair of running shoes starts with knowing your gait.",
+  1044→    "Every runner lands differently — some overpronate, others supinate —",
+  1045→    "and the right shoe corrects your natural biomechanics.",
+  1046→    "",
+  1047→    "### Key considerations",
+  1048→    "- **Cushioning:** higher mileage = more stack height.",
+  1049→    "- **Drop:** 8mm is the sweet spot for most recreational runners.",
+  1050→  ];
+  1051→  return (
+  1052→    <div className="rounded-xl border border-border/60 bg-background/40 p-4 font-mono text-xs leading-relaxed">
+  1053→      <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+  1054→        <PenLine className="size-3" />
+  1055→        AI Content Studio
+  1056→      </div>
+  1057→      {lines.map((line, i) => (
+  1058→        <motion.div
+  1059→          key={i}
+  1060→          initial={{ opacity: 0, y: 6 }}
+  1061→          animate={{ opacity: 1, y: 0 }}
+  1062→          transition={{ delay: 0.15 + i * 0.1, duration: 0.3 }}
+  1063→          className={cn(line.startsWith("#") ? "font-semibold text-foreground" : "text-muted-foreground")}
+  1064→        >
+  1065→          {line || "\u00A0"}
+  1066→        </motion.div>
+  1067→      ))}
+  1068→      <motion.span
+  1069→        animate={{ opacity: [1, 0, 1] }}
+  1070→        transition={{ duration: 1, repeat: Infinity }}
+  1071→        className="inline-block h-3.5 w-1.5 bg-primary align-middle"
+  1072→      />
+  1073→    </div>
+  1074→  );
+  1075→}
+  1076→
+  1077→function RankingsDemo() {
+  1078→  const paths = [
+  1079→    { d: "M0 80 L40 70 L80 75 L120 60 L160 50 L200 55 L240 38 L280 30 L320 22", stroke: "oklch(0.62 0.2 258)" },
+  1080→    { d: "M0 60 L40 64 L80 55 L120 58 L160 45 L200 48 L240 40 L280 36 L320 28", stroke: "oklch(0.5 0.18 196)" },
+  1081→    { d: "M0 90 L40 84 L80 80 L120 72 L160 68 L200 60 L240 58 L280 52 L320 48", stroke: "oklch(0.7 0.15 150)" },
+  1082→  ];
+  1083→  const rows = [
+  1084→    { kw: "what is seo", pos: 4, chg: "+3", color: "text-chart-3" },
+  1085→    { kw: "best running shoes", pos: 11, chg: "+6", color: "text-chart-3" },
+  1086→    { kw: "seo audit tool", pos: 7, chg: "+2", color: "text-chart-3" },
+  1087→    { kw: "keyword research", pos: 18, chg: "-1", color: "text-chart-5" },
+  1088→  ];
+  1089→  return (
+  1090→    <div className="grid gap-4 md:grid-cols-2">
+  1091→      <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+  1092→        <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+  1093→          Multi-keyword trend
+  1094→        </div>
+  1095→        <svg viewBox="0 0 320 100" className="h-28 w-full" preserveAspectRatio="none">
+  1096→          {paths.map((p, i) => (
+  1097→            <motion.path
+  1098→              key={i}
+  1099→              d={p.d}
+  1100→              fill="none"
+  1101→              stroke={p.stroke}
+  1102→              strokeWidth="2"
+  1103→              strokeLinecap="round"
+  1104→              initial={{ pathLength: 0 }}
+  1105→              animate={{ pathLength: 1 }}
+  1106→              transition={{ duration: 1.4, delay: 0.2 + i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+  1107→            />
+  1108→          ))}
+  1109→        </svg>
+  1110→      </div>
+  1111→      <div className="overflow-hidden rounded-xl border border-border/60 bg-background/40">
+  1112→        <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b border-border/60 px-3 py-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+  1113→          <span>Keyword</span>
+  1114→          <span>Pos</span>
+  1115→          <span>7d</span>
+  1116→        </div>
+  1117→        {rows.map((r, i) => (
+  1118→          <motion.div
+  1119→            key={r.kw}
+  1120→            initial={{ opacity: 0, x: 12 }}
+  1121→            animate={{ opacity: 1, x: 0 }}
+  1122→            transition={{ delay: 0.4 + i * 0.1 }}
+  1123→            className="grid grid-cols-[1fr_auto_auto] items-center gap-2 border-b border-border/40 px-3 py-2 text-xs last:border-b-0"
+  1124→          >
+  1125→            <span className="truncate">{r.kw}</span>
+  1126→            <span className="font-medium">{r.pos}</span>
+  1127→            <span className={cn("font-medium", r.color)}>{r.chg}</span>
+  1128→          </motion.div>
+  1129→        ))}
+  1130→      </div>
+  1131→    </div>
+  1132→  );
+  1133→}
+  1134→
+  1135→function ReportsDemo() {
+  1136→  const stats = [
+  1137→    { label: "Pages audited", value: 248, color: "text-chart-2" },
+  1138→    { label: "Issues found", value: 12, color: "text-chart-5" },
+  1139→    { label: "Keywords tracked", value: 86, color: "text-chart-3" },
+  1140→    { label: "Avg position", value: 14, color: "text-chart-1" },
+  1141→  ];
+  1142→  return (
+  1143→    <motion.div
+  1144→      initial={{ opacity: 0, y: 24 }}
+  1145→      animate={{ opacity: 1, y: 0 }}
+  1146→      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+  1147→      className="rounded-xl border border-border/60 bg-background/40 p-5"
+  1148→    >
+  1149→      <div className="mb-4 flex items-center justify-between">
+  1150→        <div>
+  1151→          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+  1152→            Monthly SEO Report
+  1153→          </div>
+  1154→          <div className="text-base font-semibold">example.com — November</div>
+  1155→        </div>
+  1156→        <Badge className="brand-gradient glow-primary">Ready</Badge>
+  1157→      </div>
+  1158→      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+  1159→        {stats.map((s, i) => (
+  1160→          <motion.div
+  1161→            key={s.label}
+  1162→            initial={{ opacity: 0, y: 10 }}
+  1163→            animate={{ opacity: 1, y: 0 }}
+  1164→            transition={{ delay: 0.3 + i * 0.1 }}
+  1165→            className="rounded-lg border border-border/60 p-3"
+  1166→          >
+  1167→            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+  1168→              {s.label}
+  1169→            </div>
+  1170→            <div className={cn("text-xl font-semibold", s.color)}>
+  1171→              <AnimatedCounter value={s.value} />
+  1172→            </div>
+  1173→          </motion.div>
+  1174→        ))}
+  1175→      </div>
+  1176→      <motion.div
+  1177→        initial={{ opacity: 0 }}
+  1178→        animate={{ opacity: 1 }}
+  1179→        transition={{ delay: 0.9 }}
+  1180→        className="mt-4 flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary"
+  1181→      >
+  1182→        <Check className="size-3.5" />
+  1183→        AI summary: site improved 23% month-over-month. Next priority: fix 3 missing meta descriptions.
+  1184→      </motion.div>
+  1185→    </motion.div>
+  1186→  );
+  1187→}
+  1188→
+  1189→function Showcase() {
+  1190→  const [active, setActive] = useState<string>("audit");
+  1191→  const activeTab = SHOWCASE_TABS.find((t) => t.value === active) ?? SHOWCASE_TABS[0];
+  1192→
+  1193→  return (
+  1194→    <section id="showcase" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
+  1195→      <div className="mx-auto max-w-2xl text-center">
+  1196→        <Reveal>
+  1197→          <Badge variant="outline" className="mb-4 glass-panel">
+  1198→            Product tour
+  1199→          </Badge>
+  1200→        </Reveal>
+  1201→        <WordReveal
+  1202→          text="See SEOScout in action"
+  1203→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1204→          stagger={0.05}
+  1205→        />
+  1206→        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+  1207→          A live look at the four core surfaces — audit, content, rankings, and reports.
+  1208→        </Reveal>
+  1209→      </div>
+  1210→
+  1211→      <Reveal delay={0.2} className="mt-10 flex justify-center">
+  1212→        <Tabs value={active} onValueChange={setActive}>
+  1213→          <TabsList className="h-auto flex-wrap gap-1 rounded-xl glass-panel p-1.5">
+  1214→            {SHOWCASE_TABS.map((t) => (
+  1215→              <TabsTrigger
+  1216→                key={t.value}
+  1217→                value={t.value}
+  1218→                className="flex items-center gap-1.5 rounded-lg px-3 py-2 data-[state=active]:glow-primary"
+  1219→              >
+  1220→                <t.icon className="size-3.5" />
+  1221→                <span className="text-xs sm:text-sm">{t.label}</span>
+  1222→              </TabsTrigger>
+  1223→            ))}
+  1224→          </TabsList>
+  1225→        </Tabs>
+  1226→      </Reveal>
+  1227→
+  1228→      <div className="mt-10 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+  1229→        {/* Left: copy */}
+  1230→        <div className="relative">
+  1231→          <AnimatePresence mode="wait">
+  1232→            <motion.div
+  1233→              key={activeTab.value}
+  1234→              initial={{ opacity: 0, y: 16 }}
+  1235→              animate={{ opacity: 1, y: 0 }}
+  1236→              exit={{ opacity: 0, y: -16 }}
+  1237→              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+  1238→            >
+  1239→              <div className="mb-3 flex items-center gap-2">
+  1240→                <span className="grid size-9 place-items-center rounded-lg brand-gradient glow-primary">
+  1241→                  <activeTab.icon className="size-4 text-white" />
+  1242→                </span>
+  1243→                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+  1244→                  {activeTab.label}
+  1245→                </span>
+  1246→              </div>
+  1247→              <WordReveal
+  1248→                text={activeTab.title}
+  1249→                className="text-2xl font-semibold tracking-tight sm:text-3xl"
+  1250→                stagger={0.03}
+  1251→              />
+  1252→              <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+  1253→                {activeTab.desc}
+  1254→              </p>
+  1255→              <ul className="mt-6 space-y-2.5">
+  1256→                {activeTab.bullets.map((b, i) => (
+  1257→                  <motion.li
+  1258→                    key={b}
+  1259→                    initial={{ opacity: 0, x: -10 }}
+  1260→                    animate={{ opacity: 1, x: 0 }}
+  1261→                    transition={{ delay: 0.2 + i * 0.1 }}
+  1262→                    className="flex items-center gap-2 text-sm"
+  1263→                  >
+  1264→                    <span className="grid size-5 place-items-center rounded-full bg-primary/15 text-primary">
+  1265→                      <Check className="size-3" />
+  1266→                    </span>
+  1267→                    {b}
+  1268→                  </motion.li>
+  1269→                ))}
+  1270→              </ul>
+  1271→            </motion.div>
+  1272→          </AnimatePresence>
+  1273→        </div>
+  1274→
+  1275→        {/* Right: animated mock */}
+  1276→        <div className="relative">
+  1277→          <div
+  1278→            aria-hidden
+  1279→            className="absolute -inset-6 -z-10 rounded-3xl opacity-50 blur-3xl"
+  1280→            style={{
+  1281→              background:
+  1282→                "radial-gradient(60% 60% at 60% 40%, color-mix(in oklch, var(--primary) 35%, transparent), transparent 70%)",
+  1283→            }}
+  1284→          />
+  1285→          <TiltCard max={4} className="rounded-2xl">
+  1286→            <div className="overflow-hidden rounded-2xl glass-panel glow-soft p-5">
+  1287→              <div className="mb-4 flex items-center gap-2 border-b border-border/60 pb-3">
+  1288→                <div className="flex gap-1.5">
+  1289→                  <span className="size-2.5 rounded-full bg-chart-5/70" />
+  1290→                  <span className="size-2.5 rounded-full bg-chart-4/70" />
+  1291→                  <span className="size-2.5 rounded-full bg-chart-3/70" />
+  1292→                </div>
+  1293→                <span className="ml-2 text-xs text-muted-foreground">
+  1294→                  app.seoscout.io/{activeTab.value}
+  1295→                </span>
+  1296→              </div>
+  1297→              <AnimatePresence mode="wait">
+  1298→                <motion.div
+  1299→                  key={active}
+  1300→                  initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+  1301→                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+  1302→                  exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
+  1303→                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+  1304→                >
+  1305→                  {active === "audit" && <AuditDemo />}
+  1306→                  {active === "content" && <ContentDemo />}
+  1307→                  {active === "rankings" && <RankingsDemo />}
+  1308→                  {active === "reports" && <ReportsDemo />}
+  1309→                </motion.div>
+  1310→              </AnimatePresence>
+  1311→            </div>
+  1312→          </TiltCard>
+  1313→        </div>
+  1314→      </div>
+  1315→    </section>
+  1316→  );
+  1317→}
+  1318→
+  1319→/* ------------------------------------------------------------------ */
+  1320→/* How it works                                                       */
+  1321→/* ------------------------------------------------------------------ */
+  1322→
+  1323→function HowItWorks() {
+  1324→  const ref = useRef<HTMLDivElement>(null);
+  1325→  const inView = useInView(ref, { once: true, margin: "-80px" });
+  1326→
+  1327→  return (
+  1328→    <section className="mx-auto max-w-6xl px-4 py-20">
+  1329→      <div className="mx-auto max-w-2xl text-center">
+  1330→        <Reveal>
+  1331→          <Badge variant="outline" className="mb-4 glass-panel">
+  1332→            How it works
+  1333→          </Badge>
+  1334→        </Reveal>
+  1335→        <WordReveal
+  1336→          text="From URL to ranked in three steps"
+  1337→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1338→          stagger={0.05}
+  1339→        />
+  1340→      </div>
+  1341→
+  1342→      <div ref={ref} className="relative mt-16">
+  1343→        {/* connecting line (desktop) */}
+  1344→        <svg
+  1345→          className="absolute left-0 right-0 top-9 hidden h-1 w-full lg:block"
+  1346→          viewBox="0 0 1000 4"
+  1347→          preserveAspectRatio="none"
+  1348→        >
+  1349→          <defs>
+  1350→            <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+  1351→              <stop offset="0%" stopColor="oklch(0.62 0.2 258)" />
+  1352→              <stop offset="50%" stopColor="oklch(0.5 0.18 196)" />
+  1353→              <stop offset="100%" stopColor="oklch(0.62 0.2 258)" />
+  1354→            </linearGradient>
+  1355→          </defs>
+  1356→          <motion.line
+  1357→            x1="0"
+  1358→            y1="2"
+  1359→            x2="1000"
+  1360→            y2="2"
+  1361→            stroke="url(#lineGrad)"
+  1362→            strokeWidth="2"
+  1363→            strokeDasharray="1000"
+  1364→            initial={{ strokeDashoffset: 1000 }}
+  1365→            animate={inView ? { strokeDashoffset: 0 } : {}}
+  1366→            transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+  1367→          />
+  1368→        </svg>
+  1369→
+  1370→        <motion.div
+  1371→          variants={staggerContainer}
+  1372→          initial="hidden"
+  1373→          whileInView="show"
+  1374→          viewport={{ once: true, margin: "-80px" }}
+  1375→          className="grid gap-10 lg:grid-cols-3"
+  1376→        >
+  1377→          {STEPS.map((s) => (
+  1378→            <motion.div key={s.n} variants={staggerItem} className="relative flex flex-col items-center text-center">
+  1379→              <Parallax offset={20} className="relative z-10">
+  1380→                <div className="relative">
+  1381→                  <div className="grid size-18 place-items-center rounded-full brand-gradient glow-primary">
+  1382→                    <s.icon className="size-7 text-white" />
+  1383→                  </div>
+  1384→                  <span className="absolute -right-1 -top-1 grid size-7 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-primary">
+  1385→                    {s.n}
+  1386→                  </span>
+  1387→                </div>
+  1388→              </Parallax>
+  1389→              <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
+  1390→              <p className="mt-2 max-w-xs text-sm text-muted-foreground">{s.desc}</p>
+  1391→            </motion.div>
+  1392→          ))}
+  1393→        </motion.div>
+  1394→      </div>
+  1395→    </section>
+  1396→  );
+  1397→}
+  1398→
+  1399→/* ------------------------------------------------------------------ */
+  1400→/* Live stats band                                                    */
+  1401→/* ------------------------------------------------------------------ */
+  1402→
+  1403→function LiveStats() {
+  1404→  return (
+  1405→    <section className="px-4 py-20">
+  1406→      <Parallax offset={40} className="mx-auto max-w-6xl">
+  1407→        <div className="noise-overlay relative overflow-hidden rounded-3xl glass-panel glow-soft px-6 py-12 sm:px-12">
+  1408→          <div className="absolute inset-0 dot-grid opacity-40" />
+  1409→          <motion.div
+  1410→            variants={staggerContainer}
+  1411→            initial="hidden"
+  1412→            whileInView="show"
+  1413→            viewport={{ once: true, margin: "-80px" }}
+  1414→            className="relative grid grid-cols-2 gap-8 lg:grid-cols-4"
+  1415→          >
+  1416→            {LIVE_STATS.map((s) => (
+  1417→              <motion.div key={s.label} variants={staggerItem} className="text-center">
+  1418→                <div className="text-4xl font-semibold text-glow sm:text-5xl">
+  1419→                  <AnimatedCounter value={s.value} format={s.format} />
+  1420→                </div>
+  1421→                <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">
+  1422→                  {s.label}
+  1423→                </div>
+  1424→              </motion.div>
+  1425→            ))}
+  1426→          </motion.div>
+  1427→        </div>
+  1428→      </Parallax>
+  1429→    </section>
+  1430→  );
+  1431→}
+  1432→
+  1433→/* ------------------------------------------------------------------ */
+  1434→/* Testimonials                                                       */
+  1435→/* ------------------------------------------------------------------ */
+  1436→
+  1437→function Testimonials() {
+  1438→  return (
+  1439→    <section className="mx-auto max-w-6xl px-4 py-20">
+  1440→      <div className="mx-auto max-w-2xl text-center">
+  1441→        <Reveal>
+  1442→          <Badge variant="outline" className="mb-4 glass-panel">
+  1443→            Testimonials
+  1444→          </Badge>
+  1445→        </Reveal>
+  1446→        <WordReveal
+  1447→          text="Loved by modern SEO teams"
+  1448→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1449→          stagger={0.05}
+  1450→        />
+  1451→      </div>
+  1452→
+  1453→      <motion.div
+  1454→        variants={staggerContainer}
+  1455→        initial="hidden"
+  1456→        whileInView="show"
+  1457→        viewport={{ once: true, margin: "-80px" }}
+  1458→        className="mt-12 grid gap-5 md:grid-cols-3"
+  1459→      >
+  1460→        {TESTIMONIALS.map((t) => (
+  1461→          <motion.div key={t.name} variants={staggerItem}>
+  1462→            <GlowCard className="flex h-full flex-col p-6">
+  1463→              <Quote className="size-6 text-primary/40" />
+  1464→              <div className="mt-3 flex gap-0.5">
+  1465→                {Array.from({ length: 5 }).map((_, i) => (
+  1466→                  <Star key={i} className="size-3.5 fill-chart-4 text-chart-4" />
+  1467→                ))}
+  1468→              </div>
+  1469→              <p className="mt-3 flex-1 text-sm leading-relaxed text-foreground/90">
+  1470→                "{t.quote}"
+  1471→              </p>
+  1472→              <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
+  1473→                <span className="grid size-9 place-items-center rounded-full brand-gradient text-xs font-semibold text-white">
+  1474→                  {t.initials}
+  1475→                </span>
+  1476→                <div>
+  1477→                  <div className="text-sm font-medium">{t.name}</div>
+  1478→                  <div className="text-xs text-muted-foreground">{t.role}</div>
+  1479→                </div>
+  1480→              </div>
+  1481→            </GlowCard>
+  1482→          </motion.div>
+  1483→        ))}
+  1484→      </motion.div>
+  1485→    </section>
+  1486→  );
+  1487→}
+  1488→
+  1489→/* ------------------------------------------------------------------ */
+  1490→/* Pricing                                                            */
+  1491→/* ------------------------------------------------------------------ */
+  1492→
+  1493→function Pricing({ onStart }: { onStart: () => void }) {
+  1494→  return (
+  1495→    <section id="pricing" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
+  1496→      <div className="mx-auto max-w-2xl text-center">
+  1497→        <Reveal>
+  1498→          <Badge variant="outline" className="mb-4 glass-panel">
+  1499→            Pricing
+  1500→          </Badge>
+  1501→        </Reveal>
+  1502→        <WordReveal
+  1503→          text="Simple, transparent pricing"
+  1504→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1505→          stagger={0.05}
+  1506→        />
+  1507→        <Reveal delay={0.2} className="mt-4 text-muted-foreground">
+  1508→          Start free for 14 days. No credit card required. Cancel anytime.
+  1509→        </Reveal>
+  1510→      </div>
+  1511→
+  1512→      <motion.div
+  1513→        variants={staggerContainer}
+  1514→        initial="hidden"
+  1515→        whileInView="show"
+  1516→        viewport={{ once: true, margin: "-80px" }}
+  1517→        className="mt-12 grid gap-5 lg:grid-cols-3 lg:items-center"
+  1518→      >
+  1519→        {PRICING.map((p) => (
+  1520→          <motion.div
+  1521→            key={p.name}
+  1522→            variants={staggerItem}
+  1523→            className={cn(p.popular && "lg:-my-2 lg:scale-105")}
+  1524→          >
+  1525→            <GlowCard
+  1526→              className={cn(
+  1527→                "relative flex h-full flex-col p-6",
+  1528→                p.popular && "glow-primary conic-border"
+  1529→              )}
+  1530→            >
+  1531→              {p.popular && (
+  1532→                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+  1533→                  <Badge className="brand-gradient glow-primary">Most popular</Badge>
+  1534→                </div>
+  1535→              )}
+  1536→              <div className="text-sm font-medium text-muted-foreground">{p.name}</div>
+  1537→              <div className="mt-2 flex items-baseline gap-1">
+  1538→                <span className="text-4xl font-semibold">${p.price}</span>
+  1539→                <span className="text-sm text-muted-foreground">/mo</span>
+  1540→              </div>
+  1541→              <p className="mt-2 text-xs text-muted-foreground">{p.tagline}</p>
+  1542→
+  1543→              <Separator className="my-5" />
+  1544→
+  1545→              <ul className="flex-1 space-y-2.5">
+  1546→                {p.features.map((f) => (
+  1547→                  <li key={f} className="flex items-start gap-2 text-sm">
+  1548→                    <span
+  1549→                      className={cn(
+  1550→                        "mt-0.5 grid size-4 shrink-0 place-items-center rounded-full",
+  1551→                        p.popular ? "bg-primary/15 text-primary" : "bg-foreground/10 text-foreground/70"
+  1552→                      )}
+  1553→                    >
+  1554→                      <Check className="size-2.5" />
+  1555→                    </span>
+  1556→                    {f}
+  1557→                  </li>
+  1558→                ))}
+  1559→              </ul>
+  1560→
+  1561→              <MagneticButton
+  1562→                as="button"
+  1563→                onClick={onStart}
+  1564→                className={cn(
+  1565→                  "mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors",
+  1566→                  p.popular
+  1567→                    ? "bg-primary text-primary-foreground glow-primary hover:bg-primary/90"
+  1568→                    : "border border-border/60 glass-panel hover:bg-accent"
+  1569→                )}
+  1570→              >
+  1571→                {p.cta}
+  1572→                <ArrowRight className="size-3.5" />
+  1573→              </MagneticButton>
+  1574→            </GlowCard>
+  1575→          </motion.div>
+  1576→        ))}
+  1577→      </motion.div>
+  1578→    </section>
+  1579→  );
+  1580→}
+  1581→
+  1582→/* ------------------------------------------------------------------ */
+  1583→/* FAQ                                                                */
+  1584→/* ------------------------------------------------------------------ */
+  1585→
+  1586→function FAQ() {
+  1587→  return (
+  1588→    <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-20">
+  1589→      <div className="text-center">
+  1590→        <Reveal>
+  1591→          <Badge variant="outline" className="mb-4 glass-panel">
+  1592→            FAQ
+  1593→          </Badge>
+  1594→        </Reveal>
+  1595→        <WordReveal
+  1596→          text="Frequently asked questions"
+  1597→          className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1598→          stagger={0.05}
+  1599→        />
+  1600→      </div>
+  1601→
+  1602→      <motion.div
+  1603→        variants={staggerContainer}
+  1604→        initial="hidden"
+  1605→        whileInView="show"
+  1606→        viewport={{ once: true, margin: "-80px" }}
+  1607→        className="mt-10"
+  1608→      >
+  1609→        <Accordion type="single" collapsible className="glass-panel rounded-2xl px-5">
+  1610→          {FAQS.map((f, i) => (
+  1611→            <motion.div key={f.q} variants={staggerItem}>
+  1612→              <AccordionItem value={`item-${i}`} className="border-border/60">
+  1613→                <AccordionTrigger className="text-left text-base hover:no-underline">
+  1614→                  {f.q}
+  1615→                </AccordionTrigger>
+  1616→                <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
+  1617→                  {f.a}
+  1618→                </AccordionContent>
+  1619→              </AccordionItem>
+  1620→            </motion.div>
+  1621→          ))}
+  1622→        </Accordion>
+  1623→      </motion.div>
+  1624→    </section>
+  1625→  );
+  1626→}
+  1627→
+  1628→/* ------------------------------------------------------------------ */
+  1629→/* Final CTA                                                          */
+  1630→/* ------------------------------------------------------------------ */
+  1631→
+  1632→function FinalCTA({ onStart }: { onStart: () => void }) {
+  1633→  return (
+  1634→    <section className="px-4 py-20">
+  1635→      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl glass-panel glow-soft">
+  1636→        <div className="noise-overlay absolute inset-0" />
+  1637→        {/* inner glow orbs */}
+  1638→        <div
+  1639→          aria-hidden
+  1640→          className="absolute -left-20 -top-20 size-72 rounded-full opacity-50 blur-3xl"
+  1641→          style={{
+  1642→            background:
+  1643→              "radial-gradient(circle, color-mix(in oklch, var(--primary) 50%, transparent), transparent 70%)",
+  1644→          }}
+  1645→        />
+  1646→        <div
+  1647→          aria-hidden
+  1648→          className="absolute -bottom-24 -right-16 size-72 rounded-full opacity-50 blur-3xl"
+  1649→          style={{
+  1650→            background:
+  1651→              "radial-gradient(circle, color-mix(in oklch, var(--chart-2) 45%, transparent), transparent 70%)",
+  1652→          }}
+  1653→        />
+  1654→
+  1655→        <div className="relative px-6 py-16 text-center sm:px-12 sm:py-20">
+  1656→          <div className="absolute inset-0 -z-0 opacity-60">
+  1657→            <ParticleField density={30} />
+  1658→          </div>
+  1659→
+  1660→          <div className="relative">
+  1661→            <Reveal>
+  1662→              <Badge variant="outline" className="mb-5 glass-panel">
+  1663→                <Sparkles className="size-3" />
+  1664→                Get started
+  1665→              </Badge>
+  1666→            </Reveal>
+  1667→            <WordReveal
+  1668→              text="Ready to automate your SEO?"
+  1669→              className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+  1670→              stagger={0.05}
+  1671→            />
+  1672→            <Reveal delay={0.3}>
+  1673→              <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
+  1674→                Join thousands of marketing teams shipping better SEO with SEOScout. Start your
+  1675→                14-day free trial — no credit card required.
+  1676→              </p>
+  1677→            </Reveal>
+  1678→            <Reveal delay={0.45} className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+  1679→              <MagneticButton
+  1680→                as="button"
+  1681→                onClick={onStart}
+  1682→                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-base font-medium text-primary-foreground glow-primary transition-colors hover:bg-primary/90"
+  1683→              >
+  1684→                Start free
+  1685→                <ArrowRight className="size-4" />
+  1686→              </MagneticButton>
+  1687→              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+  1688→                <span className="inline-flex items-center gap-1">
+  1689→                  <Check className="size-3 text-chart-3" /> 14-day trial
+  1690→                </span>
+  1691→                <span className="inline-flex items-center gap-1">
+  1692→                  <Check className="size-3 text-chart-3" /> No card
+  1693→                </span>
+  1694→                <span className="inline-flex items-center gap-1">
+  1695→                  <Check className="size-3 text-chart-3" /> Cancel anytime
+  1696→                </span>
+  1697→              </div>
+  1698→            </Reveal>
+  1699→          </div>
+  1700→        </div>
+  1701→      </div>
+  1702→    </section>
+  1703→  );
+  1704→}
+  1705→
+  1706→/* ------------------------------------------------------------------ */
+  1707→/* Footer                                                             */
+  1708→/* ------------------------------------------------------------------ */
+  1709→
+  1710→function Footer() {
+  1711→  return (
+  1712→    <footer className="border-t border-border/60 px-4 py-12">
+  1713→      <div className="mx-auto max-w-6xl">
+  1714→        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+  1715→          {/* Brand col */}
+  1716→          <div>
+  1717→            <div className="flex items-center gap-2.5">
+  1718→              <span className="grid size-8 place-items-center rounded-lg brand-gradient glow-primary">
+  1719→                <Search className="size-4 text-white" />
+  1720→              </span>
+  1721→              <span className="text-base font-semibold">SEOScout</span>
+  1722→            </div>
+  1723→            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+  1724→              AI-powered SEO automation. Crawl, audit, generate, track, and report — from one
+  1725→              beautiful dashboard.
+  1726→            </p>
+  1727→            <div className="mt-4 flex items-center gap-2">
+  1728→              {[Twitter, Github, Linkedin].map((Icon, i) => (
+  1729→                <a
+  1730→                  key={i}
+  1731→                  href="#"
+  1732→                  className="grid size-8 place-items-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:text-foreground"
+  1733→                  aria-label="social"
+  1734→                >
+  1735→                  <Icon className="size-3.5" />
+  1736→                </a>
+  1737→              ))}
+  1738→            </div>
+  1739→            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-border/60 px-3 py-1 text-xs text-muted-foreground">
+  1740→              <span className="relative flex size-2">
+  1741→                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-3 opacity-60" />
+  1742→                <span className="relative inline-flex size-2 rounded-full bg-chart-3" />
+  1743→              </span>
+  1744→              All systems operational
+  1745→            </div>
+  1746→          </div>
+  1747→
+  1748→          {/* Link cols */}
+  1749→          {FOOTER_LINKS.map((col) => (
+  1750→            <div key={col.title}>
+  1751→              <div className="text-xs font-semibold uppercase tracking-wider text-foreground">
+  1752→                {col.title}
+  1753→              </div>
+  1754→              <ul className="mt-3 space-y-2">
+  1755→                {col.links.map((l) => (
+  1756→                  <li key={l}>
+  1757→                    <a
+  1758→                      href="#"
+  1759→                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1760→                    >
+  1761→                      {l}
+  1762→                    </a>
+  1763→                  </li>
+  1764→                ))}
+  1765→              </ul>
+  1766→            </div>
+  1767→          ))}
+  1768→        </div>
+  1769→
+  1770→        <Separator className="my-8" />
+  1771→
+  1772→        <div className="flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground sm:flex-row">
+  1773→          <span>© {new Date().getFullYear()} SEOScout, Inc. All rights reserved.</span>
+  1774→          <div className="flex items-center gap-4">
+  1775→            <span className="inline-flex items-center gap-1">
+  1776→              <Clock className="size-3" /> Built for speed
+  1777→            </span>
+  1778→            <span className="inline-flex items-center gap-1">
+  1779→              <ShieldCheck className="size-3" /> SOC 2 Type II
+  1780→            </span>
+  1781→            <span className="inline-flex items-center gap-1">
+  1782→              <Zap className="size-3" /> 99.98% uptime
+  1783→            </span>
+  1784→          </div>
+  1785→        </div>
+  1786→      </div>
+  1787→    </footer>
+  1788→  );
+  1789→}
+  1790→
+  1791→/* ------------------------------------------------------------------ */
+  1792→/* Main                                                               */
+  1793→/* ------------------------------------------------------------------ */
+  1794→
+  1795→export function LandingPage({
+  1796→  onStart,
+  1797→  onSignIn,
+  1798→}: {
+  1799→  onStart: () => void;
+  1800→  onSignIn: () => void;
+  1801→}) {
+  1802→  return (
+  1803→    <div className="relative min-h-screen overflow-x-clip">
+  1804→      <ScrollProgress />
+  1805→      <CursorGlow />
+  1806→      <AuroraBackground />
+  1807→      <Nav onStart={onStart} onSignIn={onSignIn} />
+  1808→      <main>
+  1809→        <Hero onStart={onStart} />
+  1810→        <TrustedBy />
+  1811→        <SectionDivider />
+  1812→        <Features />
+  1813→        <SectionDivider />
+  1814→        <Showcase />
+  1815→        <SectionDivider />
+  1816→        <HowItWorks />
+  1817→        <LiveStats />
+  1818→        <Testimonials />
+  1819→        <Pricing onStart={onStart} />
+  1820→        <FAQ />
+  1821→        <FinalCTA onStart={onStart} />
+  1822→      </main>
+  1823→      <Footer />
+  1824→    </div>
+  1825→  );
+  1826→}
+  1827→

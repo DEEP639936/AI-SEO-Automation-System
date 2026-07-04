@@ -107,6 +107,37 @@ export type ContentHistoryItem = {
   siteId: string | null;
 };
 
+/* ===================== content intelligence (Python ML service) ===================== */
+export type IntelligenceResult = {
+  ok: boolean;
+  nlp: {
+    keywords: { keyword: string; score: number; count?: number; density?: number; is_target?: boolean }[];
+    key_phrases: string[];
+    text_stats: Record<string, number>;
+    readability: { flesch_reading_ease: number; flesch_kincaid_grade: number; interpretation: string };
+    top_sentences: string[];
+  } | null;
+  ml: {
+    predicted_score: number;
+    confidence_band: string;
+    feature_contributions: Record<string, number>;
+    model: string;
+    training_mae: number;
+    training_r2: number;
+  } | null;
+  deep_learning: {
+    quality_probability: number;
+    quality_label: string;
+    confidence: number;
+    model: string;
+  } | null;
+  rag: {
+    retrieved: { id: string; category: string; title: string; content: string; score: number; rank: number }[];
+    augmented_prompt_context: string;
+    retriever: string;
+  } | null;
+};
+
 export type Report = {
   id: string;
   siteId: string;
@@ -296,6 +327,16 @@ export function useContentHistory() {
     queryKey: ["content-history"],
     queryFn: () =>
       apiFetch<{ items: ContentHistoryItem[] }>("/api/content/history"),
+  });
+}
+
+export function useIntelligence() {
+  return useMutation({
+    mutationFn: (body: { text: string; keyword?: string; headingCount?: number }) =>
+      apiFetch<IntelligenceResult>("/api/intelligence/analyze", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   });
 }
 
