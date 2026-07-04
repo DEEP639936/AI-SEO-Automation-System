@@ -44,7 +44,14 @@ export async function POST(_req: Request, { params }: Params) {
     return ok({ analysis, auditId: audit.id });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "AI analysis failed";
-    if (msg.includes("non-JSON")) {
+    if (msg.includes("sandbox is inactive") || msg.includes("inactive")) {
+      return fail(
+        "The AI service is waking up. Please try again in a few seconds.",
+        503,
+        "ai_warming_up"
+      );
+    }
+    if (msg.includes("non-JSON") || msg.includes("empty response")) {
       return fail("The AI service returned an unexpected response. Please try again.", 502, "ai_parse_error");
     }
     return handleError(err);

@@ -7,6 +7,30 @@ import ZAI from "z-ai-web-dev-sdk";
  * the model to return strict JSON, which we parse defensively.
  */
 
+// Warm up the z-ai sandbox on module load so the first real request
+// doesn't hit "sandbox is inactive". This is fire-and-forget.
+let _warmupPromise: Promise<void> | null = null;
+export function warmupAI(): Promise<void> {
+  if (!_warmupPromise) {
+    _warmupPromise = (async () => {
+      try {
+        const zai = await ZAI.create();
+        await zai.chat.completions.create({
+          messages: [{ role: "user", content: "ping" }],
+          thinking: { type: "disabled" },
+        });
+        console.log("[ai] sandbox warmed up");
+      } catch (e) {
+        // Non-fatal — the first real call will retry.
+        console.warn("[ai] warmup failed (non-fatal):", e instanceof Error ? e.message : e);
+      }
+    })();
+  }
+  return _warmupPromise;
+}
+// Kick off warmup immediately on import.
+warmupAI();
+
 export interface GeneratedContent {
   titleTag: string;
   metaDescription: string;
@@ -69,21 +93,45 @@ async function callAI(
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const zai = await ZAI.create();
-  const completion: {
-    choices?: { message?: { content?: string } }[];
-  } = await zai.chat.completions.create({
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    thinking: { type: "disabled" },
-  });
-  const content = completion?.choices?.[0]?.message?.content;
-  if (!content || typeof content !== "string" || content.trim() === "") {
-    throw new Error("AI returned non-JSON output");
+  // Retry with a fresh SDK instance — the z-ai sandbox can go inactive
+  // between calls, returning {"error":"sandbox is inactive"}. A new
+  // ZAI.create() reactivates the session.
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const zai = await ZAI.create();
+      const completion: {
+        choices?: { message?: { content?: string } }[];
+      } = await zai.chat.completions.create({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        thinking: { type: "disabled" },
+      });
+      const content = completion?.choices?.[0]?.message?.content;
+      if (!content || typeof content !== "string" || content.trim() === "") {
+        throw new Error("AI returned an empty response");
+      }
+      // Detect the sandbox-inactive error echoed back as content.
+      if (content.includes('"sandbox is inactive"')) {
+        throw new Error("sandbox is inactive");
+      }
+      return content;
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      // Retry only on transient sandbox errors.
+      if (msg.includes("sandbox is inactive") || msg.includes("inactive")) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
   }
-  return content;
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("AI service unavailable after retries");
 }
 
 function asString(value: unknown, fallback = ""): string {
