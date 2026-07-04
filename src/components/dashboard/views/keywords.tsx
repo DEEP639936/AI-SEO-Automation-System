@@ -189,12 +189,15 @@ export function KeywordsView() {
         </CardContent>
       </Card>
 
-      {/* simulated notice */}
-      <div className="mb-5 flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/8 px-3 py-2 text-xs text-sky-600 dark:text-sky-400">
+      {/* demo-mode notice */}
+      <div className="mb-5 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/8 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
         <Info className="h-3.5 w-3.5 shrink-0" />
-        Rankings run on a deterministic simulation. Connect Google Search
-        Console or SEMrush via <code className="rounded bg-muted px-1">GSC_SERVICE_ACCOUNT_JSON</code> /
-        <code className="rounded bg-muted px-1">SEMRUSH_API_KEY</code> for live data.
+        <span>
+          <strong className="font-semibold">Demo mode:</strong> Rankings run on a
+          deterministic simulation. Google Search Console and SEMrush are
+          connected in demo mode — add real API keys in{" "}
+          <code className="rounded bg-muted px-1">.env</code> for live data.
+        </span>
       </div>
 
       {/* trend chart */}

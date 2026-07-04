@@ -32,10 +32,14 @@ export function SettingsView() {
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [crawlAlerts, setCrawlAlerts] = useState(false);
 
-  // API key status (env-driven, read-only display)
-  const hasGsc = !!process.env.NEXT_PUBLIC_GSC_CONNECTED;
-  const hasSemrush = !!process.env.NEXT_PUBLIC_SEMRUSH_CONNECTED;
-  const hasResend = !!process.env.NEXT_PUBLIC_RESEND_CONNECTED;
+  // API key status — "demo" means demo mode (shows connected with a Demo
+  // badge). Any other truthy value means a real key is configured.
+  const gscStatus = process.env.NEXT_PUBLIC_GSC_CONNECTED;
+  const semrushStatus = process.env.NEXT_PUBLIC_SEMRUSH_CONNECTED;
+  const resendStatus = process.env.NEXT_PUBLIC_RESEND_CONNECTED;
+  const hasGsc = !!gscStatus;
+  const hasSemrush = !!semrushStatus;
+  const hasResend = !!resendStatus;
 
   return (
     <>
@@ -152,18 +156,21 @@ export function SettingsView() {
               name="Google Search Console"
               envVar="GSC_SERVICE_ACCOUNT_JSON"
               connected={hasGsc}
+              demo={gscStatus === "demo"}
               description="Live keyword ranking data from your verified properties."
             />
             <IntegrationRow
               name="SEMrush API"
               envVar="SEMRUSH_API_KEY"
               connected={hasSemrush}
+              demo={semrushStatus === "demo"}
               description="Alternative ranking + backlink data source."
             />
             <IntegrationRow
               name="Resend (email)"
               envVar="RESEND_API_KEY"
               connected={hasResend}
+              demo={resendStatus === "demo"}
               description="Automated report delivery to stakeholders."
             />
             <IntegrationRow
@@ -237,19 +244,21 @@ function IntegrationRow({
   name,
   envVar,
   connected,
+  demo,
   description,
   builtin,
 }: {
   name: string;
   envVar: string;
   connected: boolean;
+  demo?: boolean;
   description: string;
   builtin?: boolean;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 rounded-xl border border-border/60 p-4">
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <p className="font-medium">{name}</p>
           {connected ? (
             <Badge className="gap-1 bg-emerald-500/12 text-emerald-600 dark:text-emerald-400 border-emerald-500/25">
@@ -260,11 +269,17 @@ function IntegrationRow({
               <X className="h-3 w-3" /> Not connected
             </Badge>
           )}
+          {demo && (
+            <Badge variant="secondary" className="gap-1 text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20">
+              Demo
+            </Badge>
+          )}
         </div>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         {!builtin && (
           <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
             env: {envVar}
+            {demo && " — set a real key to go live"}
           </p>
         )}
       </div>

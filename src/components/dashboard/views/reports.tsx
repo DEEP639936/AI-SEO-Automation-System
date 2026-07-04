@@ -101,11 +101,17 @@ export function ReportsView() {
         }
       />
 
-      {/* email note */}
+      {/* email note — demo mode */}
       <div className="mb-5 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/8 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
         <Mail className="h-3.5 w-3.5 shrink-0" />
-        Email delivery requires a <code className="rounded bg-muted px-1">RESEND_API_KEY</code>.
-        Reports are stored in-app for viewing and download in the meantime.
+        <span>
+          <strong className="font-semibold">Demo mode:</strong> Resend is
+          connected in demo mode — reports are generated and stored in-app for
+          viewing and download. Add a real{" "}
+          <code className="rounded bg-muted px-1">RESEND_API_KEY</code> in{" "}
+          <code className="rounded bg-muted px-1">.env</code> to enable email
+          delivery.
+        </span>
       </div>
 
       {reportsQ.isLoading ? (
