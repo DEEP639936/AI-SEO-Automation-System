@@ -676,41 +676,6 @@ function HeroPreview() {
           </div>
         </div>
       </TiltCard>
-
-      {/* floating toast badges */}
-      <motion.div
-        initial={{ opacity: 0, x: -20, y: 10 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ delay: 1.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="animate-float absolute -left-4 top-24 hidden rounded-xl glass-panel ring-hairline shadow-sm-pro px-3 py-2 sm:flex md:-left-10"
-      >
-        <div className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-lg bg-chart-5/15 text-chart-5">
-            <Bug className="size-3.5" />
-          </span>
-          <div>
-            <div className="text-xs font-medium">Issue detected</div>
-            <div className="text-[10px] text-muted-foreground">Missing meta description</div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: 20, y: -10 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ delay: 1.7, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="animate-float-slow absolute -right-4 bottom-16 hidden rounded-xl glass-panel ring-hairline shadow-sm-pro px-3 py-2 sm:flex md:-right-10"
-      >
-        <div className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-lg bg-chart-3/15 text-chart-3">
-            <Check className="size-3.5" />
-          </span>
-          <div>
-            <div className="text-xs font-medium">Content ready</div>
-            <div className="text-[10px] text-muted-foreground">AI article generated</div>
-          </div>
-        </div>
-      </motion.div>
     </div>
   );
 }
