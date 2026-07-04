@@ -18,6 +18,8 @@ import { SeverityBadge, priorityToSeverity } from "@/components/shared/severity-
 import { EmptyState } from "@/components/shared/empty-state";
 import { Markdown } from "@/components/shared/markdown";
 import { PageHeader } from "@/components/shared/page-header";
+import { GlowCard } from "@/components/shared/glow-card";
+import { Shimmer } from "@/components/shared/shimmer";
 import {
   Globe,
   Bug,
@@ -35,6 +37,7 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -104,7 +107,7 @@ export function OverviewView() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* score card */}
-        <Card className="lg:col-span-1">
+        <GlowCard className="lg:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Site Health
@@ -112,7 +115,7 @@ export function OverviewView() {
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3 pt-2">
             {auditQ.isLoading ? (
-              <Skeleton className="h-32 w-32 rounded-full" />
+              <Shimmer className="h-32 w-32 rounded-full" />
             ) : audit ? (
               <>
                 <ScoreRing score={audit.score} />
@@ -138,7 +141,7 @@ export function OverviewView() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </GlowCard>
 
         {/* stat cards */}
         <div className="grid grid-cols-2 gap-4 lg:col-span-2 lg:grid-cols-2">
@@ -175,7 +178,7 @@ export function OverviewView() {
 
       {/* ranking trend + top issues */}
       <div className="mt-4 grid gap-4 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
+        <GlowCard className="lg:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <TrendingUp className="h-4 w-4 text-primary" />
@@ -191,9 +194,9 @@ export function OverviewView() {
               loading={rankingsQ.isLoading}
             />
           </CardContent>
-        </Card>
+        </GlowCard>
 
-        <Card className="lg:col-span-2">
+        <GlowCard className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Bug className="h-4 w-4 text-primary" />
@@ -204,7 +207,7 @@ export function OverviewView() {
           <CardContent className="p-0">
             <TopIssues issues={issues} loading={auditQ.isLoading} onViewAll={() => setView("sites")} />
           </CardContent>
-        </Card>
+        </GlowCard>
       </div>
 
       {/* AI recommendations */}
@@ -356,6 +359,14 @@ function RankingTrendChart({
             formatter={(v: number) => [`#${v}`, "Avg position"]}
           />
           <ReferenceLine y={10} stroke="#10b981" strokeDasharray="4 4" strokeOpacity={0.5} />
+          <Area
+            type="monotone"
+            dataKey="avg"
+            stroke="none"
+            fill="url(#rankGrad)"
+            isAnimationActive
+            animationDuration={900}
+          />
           <Line
             type="monotone"
             dataKey="avg"
@@ -445,7 +456,7 @@ function AIRecommendationsCard({
   const data = analyze.data?.analysis;
 
   return (
-    <Card className="mt-4">
+    <GlowCard className="mt-4">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -536,7 +547,7 @@ function AIRecommendationsCard({
           />
         )}
       </CardContent>
-    </Card>
+    </GlowCard>
   );
 }
 
@@ -567,8 +578,8 @@ function StatCard({
 }) {
   const t = toneMap[tone];
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-5">
+    <GlowCard className="overflow-hidden">
+      <CardContent className="relative p-5">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {label}
@@ -579,12 +590,28 @@ function StatCard({
         </div>
         <div className="mt-3 text-3xl font-bold tabular-nums">
           {loading ? (
-            <Skeleton className="h-9 w-16" />
+            <Shimmer className="h-9 w-16" />
           ) : (
             <AnimatedCounter value={value} format={format} />
           )}
         </div>
+        {/* decorative accent bar */}
+        <div
+          className="absolute bottom-0 left-0 h-0.5 w-full opacity-60"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${toneHex[tone]}, transparent)`,
+          }}
+        />
       </CardContent>
-    </Card>
+    </GlowCard>
   );
 }
+
+const toneHex: Record<string, string> = {
+  red: "#ef4444",
+  amber: "#f59e0b",
+  green: "#10b981",
+  blue: "#3b82f6",
+  sky: "#0ea5e9",
+  muted: "#94a3b8",
+};

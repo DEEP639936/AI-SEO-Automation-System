@@ -51,13 +51,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     : "??";
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+    <div className="relative flex h-full flex-col border-r border-sidebar-border bg-sidebar/80 text-sidebar-foreground backdrop-blur-xl">
       {/* brand */}
       <div className="flex h-16 items-center gap-2.5 px-5 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl brand-gradient text-white shadow-sm">
+        <div className="relative flex h-9 w-9 items-center justify-center rounded-xl brand-gradient text-white shadow-md">
           <Search className="h-4.5 w-4.5" />
+          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-sidebar" />
         </div>
-        <span className="text-lg font-semibold tracking-tight">SEOScout</span>
+        <div className="flex flex-col leading-none">
+          <span className="text-base font-semibold tracking-tight">SEOScout</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">SEO Automation</span>
+        </div>
       </div>
 
       {/* site selector */}

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLogin, useRegister, useMe, ApiError } from "@/hooks/use-api";
+import { useLogin, useRegister, ApiError } from "@/hooks/use-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { AuroraBackground } from "@/components/shared/aurora-background";
 import {
   Eye,
   EyeOff,
@@ -20,10 +21,12 @@ import {
   Bug,
   BarChart3,
   ArrowRight,
+  ArrowLeft,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 
-export function AuthScreen() {
+export function AuthScreen({ onBack }: { onBack?: () => void }) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -74,7 +77,8 @@ export function AuthScreen() {
   }
 
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-2">
+    <div className="relative grid min-h-screen w-full lg:grid-cols-2">
+      <AuroraBackground variant="subtle" />
       {/* ---------- Left: brand / illustration panel ---------- */}
       <div className="relative hidden overflow-hidden brand-gradient lg:flex lg:flex-col lg:justify-between p-12 text-white">
         <div className="absolute inset-0 grid-bg opacity-20" />
@@ -149,7 +153,17 @@ export function AuthScreen() {
       </div>
 
       {/* ---------- Right: form panel ---------- */}
-      <div className="flex flex-col items-center justify-center px-6 py-12 mesh-bg">
+      <div className="relative flex flex-col items-center justify-center px-6 py-12">
+        {/* back to home */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="absolute left-5 top-5 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </button>
+        )}
         <motion.div
           key={mode + String(shake)}
           initial={{ opacity: 0, y: 16 }}

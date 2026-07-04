@@ -61,3 +61,70 @@ Stage Summary:
 - `bun run lint` clean. Dev server compiles without errors. Agent-browser confirmed all 6 modules interactive end-to-end.
 - Artifacts: prisma/schema.prisma; src/lib/{auth,api,ranking,crawler,ai,api-client,store,utils}.ts; src/hooks/use-api.ts; src/components/{providers,auth/auth-screen,shared/*,dashboard/*,dashboard/views/*}; src/app/api/** (20 routes); src/app/{page,layout,globals.css}.
 - Known honest limitation documented in-UI + README: keyword rankings use a clearly-labeled deterministic simulation pending GSC/SEMrush API key (env vars documented); email report delivery pending RESEND_API_KEY (reports stored in-app + downloadable). Google OAuth button present but requires client credentials (demo informs the user).
+
+---
+Task ID: A3
+Agent: frontend-styling-expert (landing page)
+Task: Build full premium animated marketing landing page
+
+Work Log:
+- Read /home/z/my-project/worklog.md to understand prior work (auth screen + dashboard already built; shared animation primitives + shadcn UI + electric-blue theme tokens already in place).
+- Inspected all shared primitives to confirm exact prop APIs: AuroraBackground (fixed, -z-10), TiltCard (children/className/glare/max, motion.div wrapper), MagneticButton (as/children/className/onClick via ...props, renders motion.div > Comp — className styles inner element), Reveal + staggerContainer/staggerItem (whileInView), Marquee (duplicates children, pause on hover), GlowCard (gradient-border + hover glow), AnimatedCounter (value/format/duration).
+- Verified globals.css utility classes available: glass-panel, glow-soft, glow-primary, text-glow, gradient-pan, brand-gradient, brand-gradient-text, dot-grid, noise-overlay, conic-border, perspective-1000, animate-float-slow, animate-marquee.
+- Created /home/z/my-project/src/components/marketing/ folder + landing-page.tsx (single self-contained "use client" component, ~1270 lines).
+- Built all 10 sections in order:
+  1. Sticky glassmorphic nav (glass-panel, backdrop blur, hide-on-scroll via useScroll + useMotionValueEvent, magnetic "Start free", ghost "Sign in", mobile hamburger w/ AnimatePresence dropdown, scroll-progress bar via scrollYProgress).
+  2. Hero (staggered mount via heroContainer/heroItem variants, pulsing ✨ pill badge, gradient-pan headline keyword span, dual CTAs, 3 AnimatedCounter trust stats, floating dashboard preview: real stylized mock w/ sidebar nav, SVG score ring w/ animated stroke-dashoffset, 3 preview stat cards, SVG trend line chart w/ animated pathLength + area fill, top-issues list — wrapped in TiltCard + animate-float-slow + soft glow under).
+  3. Trusted-by Marquee of 10 fake monospace company wordmarks.
+  4. Features bento (4-col grid): large 2x2 "Real site crawls" card w/ animated BarChartMini (staggered bar heights), 4 small feature cards, wide full-width "Scheduled audits" card w/ weekly schedule strip + pulsing "today" dot. GlowCard + TiltCard on each. staggerContainer/staggerItem reveal.
+  5. How it works — 3 numbered steps, gradient circle w/ Lucide icon + numbered badge, horizontal connecting gradient line on desktop, stagger reveal.
+  6. Live stats band — glass-panel + dot-grid, 4 big AnimatedCounter stats w/ text-glow.
+  7. Testimonials — 3 GlowCard quote cards, 5-star rating, gradient-circle avatar w/ initials, stagger reveal.
+  8. Pricing — 3 tiers (Starter $29 / Pro $99 highlighted / Business $299); Pro tier gets conic-border + glow-primary + "Most popular" Badge; feature lists w/ check icons; MagneticButton CTAs calling onStart.
+  9. Final CTA — glass-panel + noise-overlay, inner primary/cyan glow orbs, Reveal stagger, big magnetic "Start free" button, trust row (14-day trial / no card / cancel).
+  10. Footer — 6-col grid (brand col w/ tagline + 3 social icons + status indicator, 4 link columns), Separator, copyright.
+- Smooth anchor scrolling via scrollToId() helper using scrollIntoView({behavior:"smooth"}); section ids: top, features, how, pricing; scroll-mt-24 on sections to clear sticky nav.
+- AuroraBackground placed once at top of page wrapper (fixed -z-10, persists across scroll).
+- Responsive: mobile stacks gracefully (nav collapses to hamburger, bento → 1 col → 2 col → 4 col, stats 2x2 → 4-col, pricing/testimonials 1 → 3 col, footer 2 → 6 col); preview sidebar hides below sm; headline scales text-4xl → text-7xl.
+- Ran `bun run lint` → clean (zero errors). Ran `bunx tsc --noEmit` → zero errors in landing-page.tsx (only pre-existing errors in examples/, skills/, and dashboard/views/ — documented in prior worklog as unrelated).
+- Initial tsc fix: removed `type="button"` from 4 MagneticButton usages — MagneticButton's prop type is `React.HTMLAttributes<HTMLElement>` which doesn't include the button-specific `type` attribute; removed since lint doesn't enforce it and no forms exist (default button type is harmless outside forms). All 4 CTAs (nav, hero, pricing, final CTA) still call onStart correctly.
+
+Stage Summary:
+- Artifact: /home/z/my-project/src/components/marketing/landing-page.tsx — single premium animated marketing landing page, ~1270 lines, fully self-contained.
+- Props: `export function LandingPage({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void })` (inferred return type — compatible with React 19 JSX).
+- Import paths used (for orchestrator wiring):
+  - `@/components/shared/aurora-background` → AuroraBackground
+  - `@/components/shared/tilt-card` → TiltCard
+  - `@/components/shared/magnetic-button` → MagneticButton
+  - `@/components/shared/reveal` → Reveal, staggerContainer, staggerItem
+  - `@/components/shared/marquee` → Marquee
+  - `@/components/shared/glow-card` → GlowCard
+  - `@/components/shared/animated-counter` → AnimatedCounter
+  - `@/components/ui/button` → Button
+  - `@/components/ui/badge` → Badge
+  - `@/components/ui/separator` → Separator
+  - `@/lib/utils` → cn
+  - `lucide-react`, `framer-motion`
+- All 10 sections implemented, lint clean, tsc clean. No emojis except the single ✨ pill badge. Real marketing copy throughout (no lorem). Linear/Vercel/Resend-tier polish: glassmorphism, gradient text, magnetic buttons, 3D tilt, scroll progress, staggered reveals, animated SVG charts/rings, floating preview.
+- Ready for orchestrator to wire: import { LandingPage } from "@/components/marketing/landing-page" and render when unauthenticated visitor should see marketing (e.g. add a "marketing" view state alongside "login"/"register" in auth-screen, or render <LandingPage onStart={() => setView("register")} onSignIn={() => setView("login")} /> as the default unauthenticated screen).
+
+---
+Task ID: A1–A9 (advanced frontend upgrade)
+Agent: Z.ai Code (lead orchestrator)
+Task: Transform the app from "simple/functional" to a premium, advanced, fully-animated frontend (landing page, command palette, ambient backgrounds, glassmorphism, refined dashboard).
+
+Work Log:
+- A1: Extended globals.css with advanced utilities: glass-panel, gradient-border (mask-composite), glow-primary/glow-soft/text-glow, gradient-pan + aurora-drift + float-y keyframes, shimmer skeleton, conic-border, marquee, dot-grid, noise-overlay (SVG turbulence), perspective/preserve-3d helpers.
+- A2: Built 7 shared primitives: aurora-background (fixed drifting orbs + dot grid), magnetic-button (cursor-follow spring), tilt-card (3D rotateX/Y + glare), reveal + staggerContainer/staggerItem (viewport reveals), shimmer (skeleton), marquee (infinite edge-faded), glow-card (animated gradient border + hover lift).
+- A3: Delegated to frontend-styling-expert → built src/components/marketing/landing-page.tsx (~1270 lines): sticky glass nav w/ scroll-progress bar, hero with animated-gradient headline + magnetic CTAs + detailed floating dashboard preview (SVG score ring + chart) in TiltCard, trusted-by marquee, 6-card bento features, 3-step how-it-works, live-stats band, testimonials, 3-tier pricing (Pro highlighted w/ conic-border), final CTA, multi-col footer. Lint+tsc clean.
+- A4: Built src/components/dashboard/command-palette.tsx (Cmd+K / Ctrl+K) using cmdk — fuzzy search over nav, sites, quick actions, theme toggle, sign out.
+- A5: Upgraded dashboard-shell.tsx: added AuroraBackground (subtle), wired Cmd+K global shortcut, refined header with contextual title/subtitle + Search⌘K trigger button + kbd hint, blur transitions on view changes (opacity+y+blur), backdrop-blur sticky header/footer. Upgraded sidebar.tsx: glassmorphic bg-sidebar/80 + backdrop-blur, status dot on logo, two-line brand.
+- A6: Upgraded auth-screen.tsx: added AuroraBackground, "Back to home" button (onBack prop), removed mesh-bg in favor of aurora.
+- A7: Rewrote src/app/page.tsx as 3-stage flow (landing → auth → dashboard) with sessionStorage-persisted pre-auth choice + animated splash loader with AuroraBackground.
+- A8: Polished overview.tsx: all cards → GlowCard, Skeleton → Shimmer, StatCard gained decorative gradient accent bar, ranking-trend chart gained Area gradient fill under the line.
+- A9: agent-browser E2E verification: landing page renders all 10 sections; "Start free" transitions to auth w/ Back button; login → upgraded dashboard w/ ⌘K palette; palette fuzzy search works (nav/sites/actions/theme/signout); keyword table + sparklines render; mobile 375px responsive; no console/page errors; dev.log clean. lint clean.
+
+Stage Summary:
+- App transformed from functional→premium. New: marketing landing page (10 sections, animated hero preview), Cmd+K command palette, ambient aurora background across all screens, glassmorphic sidebar/header, GlowCard with animated gradient borders everywhere, 3D tilt + magnetic buttons + shimmer skeletons + scroll reveals + marquees, animated splash loader, 3-stage pre-auth flow.
+- All shared primitives reusable (aurora-background, magnetic-button, tilt-card, reveal, shimmer, marquee, glow-card). Landing page built by subagent using them.
+- lint clean; dev server compiles clean; agent-browser confirmed landing→auth→dashboard flow + palette + responsiveness with zero errors.

@@ -179,4 +179,141 @@
   /* hide scrollbar but keep scroll */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ---------- advanced: glassmorphism ---------- */
+  .glass-panel {
+    background: color-mix(in oklch, var(--card) 65%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
+  }
+  .dark .glass-panel {
+    background: color-mix(in oklch, var(--card) 55%, transparent);
+    border: 1px solid color-mix(in oklch, var(--foreground) 8%, transparent);
+  }
+
+  /* gradient hairline border via mask */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 60%, transparent), transparent 40%, color-mix(in oklch, var(--chart-2) 50%, transparent));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .gradient-border:hover::before { opacity: 1; }
+
+  /* ---------- advanced: glows ---------- */
+  .glow-primary {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 25%, transparent),
+      0 8px 30px -8px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+  .glow-soft {
+    box-shadow: 0 10px 40px -12px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+  .text-glow {
+    text-shadow: 0 0 24px color-mix(in oklch, var(--primary) 55%, transparent);
+  }
+
+  /* ---------- advanced: animated gradients ---------- */
+  .gradient-pan {
+    background-size: 200% 200%;
+    animation: gradient-pan 8s ease infinite;
+  }
+  @keyframes gradient-pan {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-aurora {
+    animation: aurora-drift 22s ease-in-out infinite alternate;
+  }
+  @keyframes aurora-drift {
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    33%  { transform: translate3d(4%, -3%, 0) scale(1.08); }
+    66%  { transform: translate3d(-3%, 4%, 0) scale(0.96); }
+    100% { transform: translate3d(2%, 2%, 0) scale(1.04); }
+  }
+  .animate-float {
+    animation: float-y 6s ease-in-out infinite;
+  }
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float-slow {
+    animation: float-y 9s ease-in-out infinite;
+  }
+
+  /* shimmer skeleton */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background: color-mix(in oklch, var(--muted) 60%, transparent);
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--foreground) 8%, transparent), transparent);
+    animation: shimmer-pan 1.6s infinite;
+  }
+  @keyframes shimmer-pan {
+    100% { transform: translateX(100%); }
+  }
+
+  /* conic spinning border (for CTAs / loaders) */
+  .conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: conic-gradient(from 0deg, transparent 0deg, var(--primary) 60deg, transparent 120deg);
+    animation: spin-slow 4s linear infinite;
+    z-index: -1;
+  }
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+
+  /* marquee */
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* dotted/grid fade background */
+  .dot-grid {
+    background-image: radial-gradient(color-mix(in oklch, var(--foreground) 14%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  }
+
+  /* noise overlay via svg */
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* perspective helpers for tilt */
+  .perspective-1000 { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
 }
+
