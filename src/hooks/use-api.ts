@@ -288,6 +288,48 @@ export function useAnalyzeAudit(siteId: string | null) {
   });
 }
 
+/* ===================== SEO pillar analysis ===================== */
+export type CheckStatus = "pass" | "warn" | "fail";
+
+export type SeoCheck = {
+  id: string;
+  label: string;
+  status: CheckStatus;
+  detail: string;
+  count?: number;
+};
+
+export type SeoPillar = {
+  id: "on-page" | "off-page" | "technical";
+  name: string;
+  score: number;
+  status: "good" | "warning" | "poor";
+  description: string;
+  checks: SeoCheck[];
+  issues: AuditIssue[];
+};
+
+export type SeoAnalysis = {
+  siteUrl: string;
+  overallScore: number;
+  pillars: SeoPillar[];
+  summary: string;
+  analyzedAt: string;
+};
+
+export function useSeoAnalysis(siteId: string | null) {
+  return useQuery({
+    queryKey: ["seo-analysis", siteId],
+    queryFn: () =>
+      apiFetch<{
+        analysis: SeoAnalysis;
+        auditId: string;
+        crawledAt: string;
+      }>(`/api/sites/${siteId}/seo-analysis`),
+    enabled: !!siteId,
+  });
+}
+
 /* ===================== content (AI) ===================== */
 export function useGenerateContent() {
   const qc = useQueryClient();

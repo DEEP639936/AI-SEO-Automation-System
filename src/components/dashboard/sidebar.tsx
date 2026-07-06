@@ -13,6 +13,7 @@ import {
   Sparkles,
   TrendingUp,
   FileText,
+  FileSearch,
   Settings,
   LogOut,
   Search,
@@ -34,6 +35,7 @@ import { useState } from "react";
 const NAV: { id: View; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "sites", label: "Sites & Audits", icon: Globe },
+  { id: "seo-analysis", label: "SEO Analysis", icon: FileSearch },
   { id: "content", label: "Content Studio", icon: Sparkles },
   { id: "keywords", label: "Keywords", icon: TrendingUp },
   { id: "reports", label: "Reports", icon: FileText },

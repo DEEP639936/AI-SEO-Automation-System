@@ -69,6 +69,7 @@ import {
   Clock,
   Search,
   ExternalLink,
+  FileSearch,
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -390,6 +391,7 @@ function DeleteSiteButton({ siteId, siteName }: { siteId: string; siteName: stri
 /* ---------------- Selected site audit detail ---------------- */
 function SiteAuditDetail({ siteId }: { siteId: string }) {
   const { data: sitesData } = useSites();
+  const { setSelectedSiteId, setView } = useUI();
   const site = sitesData?.sites.find((s) => s.id === siteId);
   const auditQ = useLatestAudit(siteId);
   const auditsQ = useAudits(siteId);
@@ -413,7 +415,20 @@ function SiteAuditDetail({ siteId }: { siteId: string }) {
               {site?.url}
             </CardDescription>
           </div>
-          <SiteCrawlButton siteId={siteId} siteName={site?.name ?? "site"} />
+          <div className="flex items-center gap-2">
+            <SiteCrawlButton siteId={siteId} siteName={site?.name ?? "site"} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedSiteId(siteId);
+                setView("seo-analysis");
+              }}
+            >
+              <FileSearch className="h-4 w-4" />
+              SEO Analysis
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

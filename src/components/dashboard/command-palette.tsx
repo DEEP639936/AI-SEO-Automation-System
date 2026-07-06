@@ -16,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
   FileText,
+  FileSearch,
   Settings,
   Moon,
   Sun,
@@ -34,6 +35,7 @@ import { useRouter } from "next/navigation";
 const NAV_ITEMS: { id: View; label: string; icon: typeof LayoutDashboard; desc: string }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, desc: "Dashboard home & health score" },
   { id: "sites", label: "Sites & Audits", icon: Globe, desc: "Add sites, run crawls, review issues" },
+  { id: "seo-analysis", label: "SEO Analysis", icon: FileSearch, desc: "On-Page, Off-Page & Technical SEO breakdown" },
   { id: "content", label: "Content Studio", icon: Sparkles, desc: "Generate & improve content with AI" },
   { id: "keywords", label: "Keywords", icon: TrendingUp, desc: "Track ranking positions" },
   { id: "reports", label: "Reports", icon: FileText, desc: "Generate & view SEO reports" },

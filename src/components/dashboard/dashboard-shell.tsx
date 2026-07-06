@@ -14,6 +14,7 @@ import { Menu, Search, Moon, Sun, Github, Command, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { OverviewView } from "./views/overview";
 import { SitesView } from "./views/sites";
+import { SeoAnalysisView } from "./views/seo-analysis";
 import { ContentStudioView } from "./views/content-studio";
 import { KeywordsView } from "./views/keywords";
 import { ReportsView } from "./views/reports";
@@ -22,6 +23,7 @@ import { SettingsView } from "./views/settings";
 const VIEW_TITLES: Record<string, { title: string; subtitle: string }> = {
   overview: { title: "Overview", subtitle: "Your SEO command center at a glance" },
   sites: { title: "Sites & Audits", subtitle: "Add websites, run crawls, review issues" },
+  "seo-analysis": { title: "SEO Analysis", subtitle: "On-Page, Off-Page & Technical SEO breakdown" },
   content: { title: "Content Studio", subtitle: "Generate & improve content with AI" },
   keywords: { title: "Keywords", subtitle: "Track ranking positions over time" },
   reports: { title: "Reports", subtitle: "Generate & review automated SEO reports" },
@@ -93,6 +95,7 @@ export function DashboardShell() {
               >
                 {view === "overview" && <OverviewView />}
                 {view === "sites" && <SitesView />}
+                {view === "seo-analysis" && <SeoAnalysisView />}
                 {view === "content" && <ContentStudioView />}
                 {view === "keywords" && <KeywordsView />}
                 {view === "reports" && <ReportsView />}

@@ -245,3 +245,29 @@ Stage Summary:
 - 4 ML capabilities each genuinely implemented: NLP (TF-IDF/RAKE/Flesch), ML (RandomForest regression), Deep Learning (from-scratch NumPy MLP with backprop), RAG (TF-IDF retrieval over 16-doc knowledge base).
 - Next.js Content Studio now surfaces a "Content Intelligence" panel with real ML/DL/NLP/RAG insights after AI content generation.
 - Artifacts: mini-services/seo-ml-service/{app/{nlp,machine_learning,deep_learning,rag,main,train}.py, weights/, start.sh, supervisor.sh, requirements.txt, package.json}; src/app/api/intelligence/analyze/route.ts; src/components/dashboard/views/content-intelligence.tsx; README updated.
+
+---
+Task ID: S1–S6 (3-pillar SEO analysis: On-Page + Off-Page + Technical)
+Agent: Z.ai Code (lead orchestrator)
+Task: Add a feature showing On-Page SEO, Off-Page SEO, and Technical SEO breakdowns when a user adds/crawls a website.
+
+Work Log:
+- S1: Built src/lib/seo-analyzer.ts — categorizes crawl results into 3 SEO pillars with 0-100 scores, weighted checks (pass/warn/fail), and issue mapping:
+  - On-Page SEO (7 checks): title tags present + length, meta descriptions present + length, H1 tags, image alt text, duplicate titles
+  - Technical SEO (6 checks): HTTPS, mobile viewport, page speed <3s, broken links, crawl errors, avg load time
+  - Off-Page SEO (6 checks): Open Graph tags, Twitter Cards, canonical tags, internal linking, backlink profile (with SEMrush/Ahrefs extension note), brand signals
+  - Overall score = weighted average (On-Page 40%, Technical 35%, Off-Page 25%)
+  - Auto-generates a summary highlighting strongest/weakest pillars
+- S2: Built API route /api/sites/[id]/seo-analysis (GET) — reconstructs CrawlResult from stored audit + issues, runs analyzeSeo(), returns the 3-pillar breakdown
+- S3: Added useSeoAnalysis hook + SeoAnalysis/SeoPillar/SeoCheck types to src/hooks/use-api.ts
+- S4: Built src/components/dashboard/views/seo-analysis.tsx — full UI:
+  - Overall score ring + summary card with pillar score chips
+  - 3 pillar cards (color-coded: blue On-Page, purple Off-Page, green Technical) each with: icon, score, description, animated score bar, checklist (pass/warn/fail icons + details), expandable issues list
+  - Info note explaining how scores are calculated
+- S5: Added "seo-analysis" to View union type, sidebar NAV (FileSearch icon), command palette NAV_ITEMS, dashboard-shell VIEW_TITLES + view rendering. Added "SEO Analysis" button in Sites audit detail header so users can jump straight to the 3-pillar view after crawling.
+- S6: Lint clean. API E2E verified: GET /api/sites/{id}/seo-analysis returns HTTP 200 with overall 76, On-Page 70 (7 checks), Technical 100 (6 checks), Off-Page 51 (6 checks) for the existing crawled site.
+
+Stage Summary:
+- New "SEO Analysis" feature complete: when a user adds a website and crawls it, they see a 3-pillar breakdown (On-Page / Off-Page / Technical SEO) with scores, checklists, and issue details.
+- Artifacts: src/lib/seo-analyzer.ts, src/app/api/sites/[id]/seo-analysis/route.ts, src/hooks/use-api.ts (added useSeoAnalysis), src/components/dashboard/views/seo-analysis.tsx, updated sidebar/dashboard-shell/command-palette/store/sites view.
+- lint clean; API verified working with real data from the existing crawl.
